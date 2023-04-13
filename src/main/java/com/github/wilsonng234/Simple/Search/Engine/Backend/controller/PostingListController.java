@@ -2,6 +2,7 @@ package com.github.wilsonng234.Simple.Search.Engine.Backend.controller;
 
 import com.github.wilsonng234.Simple.Search.Engine.Backend.model.Posting;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.model.PostingList;
+import com.github.wilsonng234.Simple.Search.Engine.Backend.model.Word;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.service.PostingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,8 +26,8 @@ public class PostingListController {
     }
 
     @PostMapping
-    public ResponseEntity<PostingList> createPostingList(@RequestBody Map<String, String> payload) {
-        String wordId = payload.get("wordId");
+    public ResponseEntity<PostingList> createPostingList(@RequestBody Word word) {
+        String wordId = word.getWordId();
 
         return new ResponseEntity<>(postingListService.createPostingList(wordId), HttpStatus.CREATED);
     }

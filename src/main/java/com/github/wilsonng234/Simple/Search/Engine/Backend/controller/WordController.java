@@ -23,9 +23,7 @@ public class WordController {
     }
 
     @PostMapping
-    public ResponseEntity<Word> createWord(@RequestBody Map<String, String> payload) {
-        String word = payload.get("word");
-
-        return new ResponseEntity<>(wordService.createWord(word), HttpStatus.CREATED);
+    public ResponseEntity<Word> createWord(@RequestBody Word word) {
+        return new ResponseEntity<>(wordService.createWord(word.getWord()), HttpStatus.CREATED);
     }
 }

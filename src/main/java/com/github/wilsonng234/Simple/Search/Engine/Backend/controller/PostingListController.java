@@ -20,7 +20,7 @@ public class PostingListController {
     private PostingListService postingListService;
 
     @GetMapping
-    public ResponseEntity<List<PostingList>> getAllMovies() {
+    public ResponseEntity<List<PostingList>> getAllPostingLists() {
         return new ResponseEntity<>(postingListService.allPostingLists(), HttpStatus.OK);
     }
 

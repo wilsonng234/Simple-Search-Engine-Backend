@@ -13,7 +13,7 @@
 
 - [X] Implement `words` collection
     - Primary key: wordId
-- [ ] Implement `documents` collection
+- [X] Implement `documents` collection
     - Primary key: docId
 - [ ] Implement `titlePostings` collection
     - Primary key: wordId, docId

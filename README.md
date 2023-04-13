@@ -11,7 +11,7 @@
 
 ## Collections
 
-- [ ] Implement `words` collection
+- [X] Implement `words` collection
     - Primary key: wordId
 - [ ] Implement `documents` collection
     - Primary key: docId

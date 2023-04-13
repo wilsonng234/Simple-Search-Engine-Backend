@@ -8,3 +8,16 @@
    
 2. Run `./mvnw spring-boot:run` to get localhost  
 ```
+
+## Collections
+
+- [ ] Implement `words` collection
+    - Primary key: wordId
+- [ ] Implement `documents` collection
+    - Primary key: docId
+- [ ] Implement `titlePostings` collection
+    - Primary key: wordId, docId
+    - foreign key() references postingLists(wordId)
+- [ ] Implement `bodyPostings` collection
+    - Primary key: wordId, docId
+    - foreign key() references postingLists(wordId)

@@ -17,7 +17,7 @@
     - Primary key: docId
 - [ ] Implement `titlePostings` collection
     - Primary key: wordId, docId
-    - foreign key() references postingLists(wordId)
+    - foreign key(wordId) references postingLists(wordId)
 - [ ] Implement `bodyPostings` collection
     - Primary key: wordId, docId
-    - foreign key() references postingLists(wordId)
+    - foreign key(wordId) references postingLists(wordId)

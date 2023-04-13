@@ -19,9 +19,7 @@ public class DocumentService {
     }
 
     public Document createDocument(Document document) {
-        documentRepository.insert(document);
-
-        return document;
+        return documentRepository.insert(document);
     }
 
     public Document createDocument(String url, long size, String title, long lastModificationDate,

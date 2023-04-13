@@ -23,8 +23,7 @@ public class WordService {
 
     public Word createWord(String word) {
         Word createdWord = new Word(word);
-        wordRepository.insert(createdWord);
-        
-        return createdWord;
+
+        return wordRepository.insert(createdWord);
     }
 }

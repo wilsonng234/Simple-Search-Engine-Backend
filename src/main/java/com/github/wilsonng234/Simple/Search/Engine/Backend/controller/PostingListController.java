@@ -1,5 +1,6 @@
 package com.github.wilsonng234.Simple.Search.Engine.Backend.controller;
 
+import com.github.wilsonng234.Simple.Search.Engine.Backend.model.Posting;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.model.PostingList;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.service.PostingListService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -27,5 +29,11 @@ public class PostingListController {
         String wordId = payload.get("wordId");
 
         return new ResponseEntity<>(postingListService.createPostingList(wordId), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{wordId}")
+    public ResponseEntity<PostingList> putPostingList(@PathVariable String wordId, @RequestBody Posting posting) {
+        System.out.println(posting);
+        return new ResponseEntity<>(postingListService.putPositingList(wordId, posting), HttpStatus.CREATED);
     }
 }

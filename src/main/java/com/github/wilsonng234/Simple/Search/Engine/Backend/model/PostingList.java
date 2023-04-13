@@ -13,5 +13,7 @@ import java.util.List;
 public class PostingList {
     @Id
     private String wordId;
-    private List<Posting> postingList;
+    private List<Posting> postings;
+
+
 }

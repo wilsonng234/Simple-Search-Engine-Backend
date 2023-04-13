@@ -21,14 +21,4 @@ public class DocumentService {
     public Document createDocument(Document document) {
         return documentRepository.insert(document);
     }
-
-    public Document createDocument(String url, long size, String title, long lastModificationDate,
-                                   Map<String, Integer> titleWordIDFreqPairs,
-                                   Map<String, Integer> bodyWordIDFreqPairs,
-                                   List<String> childrenUrls) {
-        Document createdDocument = new Document(url, size, title, lastModificationDate, titleWordIDFreqPairs, bodyWordIDFreqPairs, childrenUrls);
-
-        return createDocument(createdDocument);
-    }
-
 }

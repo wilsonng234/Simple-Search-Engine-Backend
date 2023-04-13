@@ -33,7 +33,6 @@ public class PostingListController {
 
     @PutMapping("/{wordId}")
     public ResponseEntity<PostingList> putPostingList(@PathVariable String wordId, @RequestBody Posting posting) {
-        System.out.println(posting);
         return new ResponseEntity<>(postingListService.putPositingList(wordId, posting), HttpStatus.CREATED);
     }
 }

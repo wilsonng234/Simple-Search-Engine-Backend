@@ -5,11 +5,13 @@ import com.github.wilsonng234.Simple.Search.Engine.Backend.model.PostingList;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.model.TitlePostingList;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.repository.TitlePostingListRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class TitlePostingListService extends PostingListService {
     @Autowired
     private TitlePostingListRepository titlePostingListRepository;

@@ -8,10 +8,10 @@ import com.github.wilsonng234.Simple.Search.Engine.Backend.service.BodyPostingLi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.List;
 
 @RestController
@@ -22,19 +22,31 @@ public class BodyPostingListController extends PostingListController {
     private BodyPostingListService bodyPostingListService;
 
     @Override
+    @GetMapping
     public ResponseEntity<List<? extends PostingList>> getAllPostingLists() {
         return new ResponseEntity<>(bodyPostingListService.allPostingLists(), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<? extends PostingList> createPostingList(Word word) {
+    @PostMapping
+    public ResponseEntity<? extends PostingList> createPostingList(@RequestBody Word word) {
         String wordId = word.getWordId();
 
         return new ResponseEntity<>(bodyPostingListService.createPostingList(wordId), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<? extends PostingList> putPostingList(String wordId, Posting posting) {
+    @PutMapping("/{wordId}")
+    public ResponseEntity<? extends PostingList> putPostingList(@PathVariable String wordId, @RequestBody Posting posting) {
         return new ResponseEntity<>(bodyPostingListService.putPositingList(wordId, posting), HttpStatus.OK);
+    }
+
+    public static void main(String[] args) throws NoSuchMethodException {
+        Class<PostingListController> clazz = PostingListController.class;
+        Method method = clazz.getMethod("putPostingList", String.class, Posting.class);
+
+        for (Annotation annotation : method.getAnnotations()) {
+            System.out.println(annotation);
+        }
     }
 }

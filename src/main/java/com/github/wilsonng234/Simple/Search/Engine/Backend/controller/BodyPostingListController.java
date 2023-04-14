@@ -40,13 +40,4 @@ public class BodyPostingListController extends PostingListController {
     public ResponseEntity<? extends PostingList> putPostingList(@PathVariable String wordId, @RequestBody Posting posting) {
         return new ResponseEntity<>(bodyPostingListService.putPositingList(wordId, posting), HttpStatus.OK);
     }
-
-    public static void main(String[] args) throws NoSuchMethodException {
-        Class<PostingListController> clazz = PostingListController.class;
-        Method method = clazz.getMethod("putPostingList", String.class, Posting.class);
-
-        for (Annotation annotation : method.getAnnotations()) {
-            System.out.println(annotation);
-        }
-    }
 }

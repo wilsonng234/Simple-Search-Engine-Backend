@@ -16,14 +16,17 @@ public class BodyPostingListService extends PostingListService {
     @Autowired
     private BodyPostingListRepository bodyPostingListRepository;
 
+    @Override
     public List<? extends PostingList> allPostingLists() {
         return bodyPostingListRepository.findAll();
     }
 
+    @Override
     public BodyPostingList createPostingList(String wordId) {
         return bodyPostingListRepository.insert(new BodyPostingList(wordId, new LinkedList<>()));
     }
 
+    @Override
     public BodyPostingList putPositingList(String wordId, Posting posting) {
         Optional<BodyPostingList> bodyPostingListOptional = bodyPostingListRepository.findBodyPostingListByWordId(wordId);
         BodyPostingList bodyPostingList = bodyPostingListOptional.orElseGet(() -> createPostingList(wordId));

@@ -41,6 +41,7 @@ public class TitlePostingListService extends PostingListService {
         }
 
         titlePostingList.setPostings(postings);
+        titlePostingList.setMaxTF(Math.max(titlePostingList.getMaxTF(), posting.getWordPositions().size()));
         return titlePostingListRepository.save(titlePostingList);
     }
 }

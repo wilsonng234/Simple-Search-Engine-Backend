@@ -41,6 +41,7 @@ public class BodyPostingListService extends PostingListService {
         }
 
         bodyPostingList.setPostings(postings);
+        bodyPostingList.setMaxTF(Math.max(bodyPostingList.getMaxTF(), posting.getWordPositions().size()));
         return bodyPostingListRepository.save(bodyPostingList);
     }
 }

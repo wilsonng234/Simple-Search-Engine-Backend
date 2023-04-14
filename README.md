@@ -15,7 +15,7 @@
     - Primary key: wordId
 - [X] Implement `documents` collection
     - Primary key: docId
-- [ ] Implement `titlePostingsList` collection
+- [X] Implement `titlePostingsList` collection
     - Primary key: wordId
 - [X] Implement `bodyPostingsList` collection
     - Primary key: wordId

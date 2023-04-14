@@ -19,29 +19,29 @@ public class Document {
     private long size;
     private String title;
     private long lastModificationDate;
-    private Map<String, Integer> titleWordIDFreqPairs;      // wordID, frequency
-    private Map<String, Integer> bodyWordIDFreqPairs;       // wordID, frequency
+    private Map<String, Integer> titleWordIDFreqsMap;      // wordID, frequency
+    private Map<String, Integer> bodyWordIDFreqsMap;       // wordID, frequency
     private List<String> childrenUrls;
 
     public Document() {
         size = 0;
         title = null;
         lastModificationDate = 0;
-        titleWordIDFreqPairs = null;
-        bodyWordIDFreqPairs = null;
+        titleWordIDFreqsMap = null;
+        bodyWordIDFreqsMap = null;
         childrenUrls = null;
     }
 
     public Document(String url, long size, String title, long lastModificationDate,
-                    Map<String, Integer> titleWordIDFreqPairs,
-                    Map<String, Integer> bodyWordIDFreqPairs,
+                    Map<String, Integer> titleWordIDFreqsMap,
+                    Map<String, Integer> bodyWordIDFreqsMap,
                     List<String> childrenUrls) {
         this.url = url;
         this.size = size;
         this.title = title;
         this.lastModificationDate = lastModificationDate;
-        this.titleWordIDFreqPairs = titleWordIDFreqPairs;
-        this.bodyWordIDFreqPairs = bodyWordIDFreqPairs;
+        this.titleWordIDFreqsMap = titleWordIDFreqsMap;
+        this.bodyWordIDFreqsMap = bodyWordIDFreqsMap;
         this.childrenUrls = childrenUrls;
     }
 }

@@ -143,7 +143,7 @@ public class CrawlerService {
             try {
                 crawler.request();
             } catch (IOException exception) {
-                logger.warn(exception.getMessage());
+                logger.warn(exception.getMessage() + "\n" + crawler.getUrl());
                 continue;
             }
             // skip already indexed and no further update is needed
@@ -198,6 +198,12 @@ public class CrawlerService {
                 documentController.createDocument(document);
             }
 
+            // breadth-first search
+            for (String childLink : childrenLinks) {
+                if (!crawledLinks.contains(childLink))
+                    crawlers.add(new Crawler(childLink));
+            }
+            
             crawledLinks.add(crawler.getUrl());
             crawledPages++;
         }

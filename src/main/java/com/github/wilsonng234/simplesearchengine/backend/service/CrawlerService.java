@@ -1,6 +1,7 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.controller.DocumentController;
+import com.github.wilsonng234.simplesearchengine.backend.controller.WordController;
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import lombok.Data;
@@ -18,6 +19,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CrawlerService {
@@ -30,7 +32,15 @@ public class CrawlerService {
     }
 
     @Autowired
+    private WordController wordController;
+    @Autowired
+    private WordService wordService;
+    @Autowired
     private DocumentController documentController;
+    @Autowired
+    private TitlePostingListService titlePostingListService;
+    @Autowired
+    private BodyPostingListService bodyPostingListService;
 
     @Data
     private class Crawler {
@@ -147,10 +157,15 @@ public class CrawlerService {
             Optional<String> optionalURL = Optional.of(crawler.getUrl());
             Optional<String> optionalDocId = Optional.empty();
             Optional<Document> optionalDocument = documentController.getDocument(optionalURL, optionalDocId).getBody();
-            if (optionalDocument.isPresent()) {
-                Document document = optionalDocument.get();
-                if (document.getLastModificationDate() == lastModificationDate)
-                    continue;
+
+            boolean indexedDocument = false;
+            if (optionalDocument != null) {
+                indexedDocument = optionalDocument.isPresent();
+                if (indexedDocument) {
+                    Document document = optionalDocument.get();
+                    if (document.getLastModificationDate() == lastModificationDate)
+                        continue;
+                }
             }
 
             // get the document
@@ -158,10 +173,30 @@ public class CrawlerService {
             String title = crawler.getTitle();
             List<String> titleWords = crawler.getTitleWords();
             List<String> bodyWords = crawler.getBodyWords();
+            List<String> titleWordIds = titleWords.stream()
+                    .map(word -> wordController.getWord(Optional.of(word), Optional.empty()).getBody()
+                            .orElseGet(() -> wordService.createWord(word)).getWordId()).toList();
+            Map<String, Integer> titleWordIdFreqsMap = titleWordIds.stream().collect(Collectors.groupingBy(wordId -> wordId, Collectors.counting()))
+                    .entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, freq -> freq.getValue().intValue()));
+            List<String> bodyWordIds = bodyWords.stream()
+                    .map(word -> wordController.getWord(Optional.of(word), Optional.empty()).getBody()
+                            .orElseGet(() -> wordService.createWord(word)).getWordId()).toList();
+            Map<String, Integer> bodyWordIdFreqsMap = bodyWordIds.stream().collect(Collectors.groupingBy(wordId -> wordId, Collectors.counting()))
+                    .entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, freq -> freq.getValue().intValue()));
             List<String> childrenLinks = crawler.getChildrenLinks();
 
+            Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordIdFreqsMap, bodyWordIdFreqsMap, childrenLinks);
 
-//            Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, );
+            // TODO: update the inverted index
+
+            // update the forward index
+            if (indexedDocument) {
+//                documentController.putDocument(document);
+            } else {
+                documentController.createDocument(document);
+            }
 
             crawledLinks.add(crawler.getUrl());
             crawledPages++;

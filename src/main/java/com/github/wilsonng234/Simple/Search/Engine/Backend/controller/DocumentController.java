@@ -8,7 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-    
+import java.util.Optional;
+
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("api/v1/documents")
@@ -17,6 +18,16 @@ public class DocumentController {
     private DocumentService documentService;
 
     @GetMapping
+    public ResponseEntity<Optional<Document>> getDocument(@RequestParam Optional<String> url, @RequestParam Optional<String> docId) {
+        if (url.isPresent())
+            return new ResponseEntity<>(documentService.getDocument(url.get(), DocumentService.QueryType.URL), HttpStatus.OK);
+        else if (docId.isPresent())
+            return new ResponseEntity<>(documentService.getDocument(docId.get(), DocumentService.QueryType.DOCID), HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/all")
     public ResponseEntity<List<Document>> getAllDocuments() {
         return new ResponseEntity<>(documentService.allDocuments(), HttpStatus.OK);
     }

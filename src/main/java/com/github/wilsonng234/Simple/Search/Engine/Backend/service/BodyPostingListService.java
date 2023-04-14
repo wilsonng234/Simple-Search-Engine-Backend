@@ -21,9 +21,7 @@ public class BodyPostingListService extends PostingListService {
     }
 
     public BodyPostingList createPostingList(String wordId) {
-        BodyPostingList bodyPostingList = new BodyPostingList(wordId, new LinkedList<>());
-
-        return bodyPostingListRepository.insert(bodyPostingList);
+        return bodyPostingListRepository.insert(new BodyPostingList(wordId, new LinkedList<>()));
     }
 
     public BodyPostingList putPositingList(String wordId, Posting posting) {

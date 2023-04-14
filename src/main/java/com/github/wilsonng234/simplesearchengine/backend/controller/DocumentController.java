@@ -19,6 +19,9 @@ public class DocumentController {
 
     @GetMapping
     public ResponseEntity<Optional<Document>> getDocument(@RequestParam Optional<String> url, @RequestParam Optional<String> docId) {
+        if (url.isPresent() && docId.isPresent())
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        
         if (url.isPresent())
             return new ResponseEntity<>(documentService.getDocument(url.get(), DocumentService.QueryType.URL), HttpStatus.OK);
         else if (docId.isPresent())

@@ -19,6 +19,9 @@ public class WordController {
 
     @GetMapping
     public ResponseEntity<Optional<Word>> getWord(@RequestParam Optional<String> word, @RequestParam Optional<String> wordId) {
+        if (word.isPresent() && wordId.isPresent())
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
         if (word.isPresent())
             return new ResponseEntity<>(wordService.getWord(word.get(), WordService.QueryType.WORD), HttpStatus.OK);
         else if (wordId.isPresent())

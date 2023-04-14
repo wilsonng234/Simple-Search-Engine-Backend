@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -17,6 +18,16 @@ public class WordController {
     private WordService wordService;
 
     @GetMapping
+    public ResponseEntity<Optional<Word>> getWord(@RequestParam Optional<String> word, @RequestParam Optional<String> wordId) {
+        if (word.isPresent())
+            return new ResponseEntity<>(wordService.getWord(word.get(), WordService.QueryType.WORD), HttpStatus.OK);
+        else if (wordId.isPresent())
+            return new ResponseEntity<>(wordService.getWord(wordId.get(), WordService.QueryType.WORDID), HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/all")
     public ResponseEntity<List<Word>> getAllWords() {
         return new ResponseEntity<>(wordService.allWords(), HttpStatus.OK);
     }

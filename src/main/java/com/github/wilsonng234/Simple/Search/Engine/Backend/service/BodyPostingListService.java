@@ -25,8 +25,8 @@ public class BodyPostingListService extends PostingListService {
     }
 
     public BodyPostingList putPositingList(String wordId, Posting posting) {
-        Optional<BodyPostingList> postingListOptional = bodyPostingListRepository.findBodyPostingListByWordId(wordId);
-        BodyPostingList bodyPostingList = postingListOptional.orElseGet(() -> createPostingList(wordId));
+        Optional<BodyPostingList> bodyPostingListOptional = bodyPostingListRepository.findBodyPostingListByWordId(wordId);
+        BodyPostingList bodyPostingList = bodyPostingListOptional.orElseGet(() -> createPostingList(wordId));
 
         List<Posting> postings = bodyPostingList.getPostings();
         List<Posting> filteredPostings = postings.stream().filter(p -> p.equals(posting)).toList();

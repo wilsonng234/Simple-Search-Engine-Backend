@@ -113,7 +113,7 @@ public class CrawlerService {
                     new URL(childLink).toURI();
                 } catch (MalformedURLException | URISyntaxException e) {
                     // Ignore invalid links
-                    logger.warn(e.getMessage());
+//                    logger.warn(e.getMessage());
                 }
 
                 childrenLinks.add(childLink);
@@ -203,7 +203,7 @@ public class CrawlerService {
                 if (!crawledLinks.contains(childLink))
                     crawlers.add(new Crawler(childLink));
             }
-            
+
             crawledLinks.add(crawler.getUrl());
             crawledPages++;
         }

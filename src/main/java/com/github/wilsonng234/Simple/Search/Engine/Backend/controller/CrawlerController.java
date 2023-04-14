@@ -14,7 +14,8 @@ public class CrawlerController {
     private CrawlerService crawlerService;
 
     @PostMapping
-    public ResponseEntity<String> crawlWebsite(@RequestParam String url, @RequestParam String pages) {
+    public ResponseEntity<String> crawlWebsite(@RequestParam(defaultValue = "https://cse.ust.hk/") String url,
+                                               @RequestParam(defaultValue = "30") String pages) {
         HttpStatus httpStatus = crawlerService.crawl(url, pages) ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
         String message = httpStatus == HttpStatus.OK ? "Crawling successful" : "Crawling failed";
 

@@ -15,7 +15,7 @@ public abstract class PostingList {
     private int maxTF = 0;
 
     public PostingList(String wordId, List<Posting> postings) {
-        wordId = wordId;
-        postings = postings;
+        this.wordId = wordId;
+        this.postings = postings;
     }
 }

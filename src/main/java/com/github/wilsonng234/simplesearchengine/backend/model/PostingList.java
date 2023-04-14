@@ -12,5 +12,10 @@ public abstract class PostingList {
     @Id
     private String wordId;
     private List<Posting> postings;
+    private int maxTF = 0;
 
+    public PostingList(String wordId, List<Posting> postings) {
+        wordId = wordId;
+        postings = postings;
+    }
 }

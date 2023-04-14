@@ -56,6 +56,13 @@
             <artifactId>jsoup</artifactId>
             <version>1.15.4</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/ca.rmen/porter-stemmer -->
+        <dependency>
+            <groupId>ca.rmen</groupId>
+            <artifactId>porter-stemmer</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>

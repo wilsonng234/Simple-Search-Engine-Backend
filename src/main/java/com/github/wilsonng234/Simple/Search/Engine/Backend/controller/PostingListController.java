@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 public abstract class PostingListController {
     @GetMapping
     public abstract ResponseEntity<List<? extends PostingList>> getAllPostingLists();

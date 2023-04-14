@@ -1,6 +1,5 @@
 package com.github.wilsonng234.Simple.Search.Engine.Backend.controller;
 
-import com.github.wilsonng234.Simple.Search.Engine.Backend.model.BodyPostingList;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.model.Posting;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.model.PostingList;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.model.Word;
@@ -10,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.List;
 
 @RestController

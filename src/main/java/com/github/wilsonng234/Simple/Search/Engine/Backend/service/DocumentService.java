@@ -3,11 +3,9 @@ package com.github.wilsonng234.Simple.Search.Engine.Backend.service;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.model.Document;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.repository.DocumentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class DocumentService {

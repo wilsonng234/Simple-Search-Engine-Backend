@@ -15,9 +15,7 @@
     - Primary key: wordId
 - [X] Implement `documents` collection
     - Primary key: docId
-- [ ] Implement `titlePostings` collection
-    - Primary key: wordId, docId
-    - foreign key() references postingLists(wordId)
-- [ ] Implement `bodyPostings` collection
-    - Primary key: wordId, docId
-    - foreign key() references postingLists(wordId)
+- [X] Implement `titlePostingsList` collection
+    - Primary key: wordId
+- [X] Implement `bodyPostingsList` collection
+    - Primary key: wordId

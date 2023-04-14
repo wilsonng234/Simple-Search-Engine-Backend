@@ -15,4 +15,8 @@ public class DocumentService {
     public List<Document> allDocuments() {
         return documentRepository.findAll();
     }
+
+    public Document createDocument(Document document) {
+        return documentRepository.insert(document);
+    }
 }

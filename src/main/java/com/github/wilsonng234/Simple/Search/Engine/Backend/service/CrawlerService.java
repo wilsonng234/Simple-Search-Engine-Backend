@@ -146,7 +146,7 @@ public class CrawlerService {
             }
             Optional<String> optionalURL = Optional.of(crawler.getUrl());
             Optional<String> optionalDocId = Optional.empty();
-            Optional<Document> optionalDocument = documentController.getDocument(optionalURL, optionalDocId).getBody());
+            Optional<Document> optionalDocument = documentController.getDocument(optionalURL, optionalDocId).getBody();
             if (optionalDocument.isPresent()) {
                 Document document = optionalDocument.get();
                 if (document.getLastModificationDate() == lastModificationDate)

@@ -1,11 +1,14 @@
 package com.github.wilsonng234.Simple.Search.Engine.Backend.service;
 
+import com.github.wilsonng234.Simple.Search.Engine.Backend.controller.DocumentController;
+import com.github.wilsonng234.Simple.Search.Engine.Backend.model.Document;
 import com.github.wilsonng234.Simple.Search.Engine.Backend.util.NLPUtils;
 import lombok.Data;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -25,6 +28,9 @@ public class CrawlerService {
         simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
+
+    @Autowired
+    private DocumentController documentController;
 
     @Data
     private class Crawler {
@@ -131,19 +137,31 @@ public class CrawlerService {
                 continue;
             }
             // skip already indexed and no further update is needed
-            
-            logger.error(crawler.getSize());
-            logger.error(crawler.getTitle());
+            long lastModificationDate;
             try {
-                logger.error(crawler.getLastModificationDate());
-            } catch (ParseException e) {
-                logger.warn(e.getMessage());
+                lastModificationDate = crawler.getLastModificationDate();
+            } catch (ParseException exception) {
+                logger.warn(exception.getMessage());
                 continue;
             }
-            logger.error(crawler.getTitleWords());
-            logger.error(crawler.getBodyWords());
-            logger.error(crawler.getChildrenLinks());
+            Optional<String> optionalURL = Optional.of(crawler.getUrl());
+            Optional<String> optionalDocId = Optional.empty();
+            Optional<Document> optionalDocument = documentController.getDocument(optionalURL, optionalDocId).getBody());
+            if (optionalDocument.isPresent()) {
+                Document document = optionalDocument.get();
+                if (document.getLastModificationDate() == lastModificationDate)
+                    continue;
+            }
 
+            // get the document
+            long size = crawler.getSize();
+            String title = crawler.getTitle();
+            List<String> titleWords = crawler.getTitleWords();
+            List<String> bodyWords = crawler.getBodyWords();
+            List<String> childrenLinks = crawler.getChildrenLinks();
+
+
+//            Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, );
 
             crawledLinks.add(crawler.getUrl());
             crawledPages++;

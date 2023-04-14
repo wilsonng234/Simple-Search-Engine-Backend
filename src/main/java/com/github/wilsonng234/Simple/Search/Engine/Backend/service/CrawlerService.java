@@ -87,7 +87,7 @@ public class CrawlerService {
             return words;
         }
 
-        private List<String> getChildrenLinks() throws IOException {
+        private List<String> getChildrenLinks() {
             List<String> childrenLinks = new LinkedList<>();
 
             Elements linksElements = document.select("a[href]");
@@ -119,19 +119,31 @@ public class CrawlerService {
         while (crawledPages < pagesToCrawl && !crawlers.isEmpty()) {
             Crawler crawler = crawlers.poll();
 
+            // skip if the link has been crawled
+            if (crawledLinks.contains(crawler.getUrl()))
+                continue;
+            crawledLinks.add(crawler.getUrl());
+            // skip if the connection is not successful
             try {
                 crawler.request();
-                logger.error(crawler.getSize());
-                logger.error(crawler.getTitle());
-                logger.error(crawler.getLastModificationDate());
-                logger.error(crawler.getTitleWords());
-                logger.error(crawler.getBodyWords());
-                logger.error(crawler.getChildrenLinks());
-
-            } catch (IOException | ParseException exception) {
-                logger.error(exception.getMessage());
-                return false;
+            } catch (IOException exception) {
+                logger.warn(exception.getMessage());
+                continue;
             }
+            // skip already indexed and no further update is needed
+            
+            logger.error(crawler.getSize());
+            logger.error(crawler.getTitle());
+            try {
+                logger.error(crawler.getLastModificationDate());
+            } catch (ParseException e) {
+                logger.warn(e.getMessage());
+                continue;
+            }
+            logger.error(crawler.getTitleWords());
+            logger.error(crawler.getBodyWords());
+            logger.error(crawler.getChildrenLinks());
+
 
             crawledLinks.add(crawler.getUrl());
             crawledPages++;

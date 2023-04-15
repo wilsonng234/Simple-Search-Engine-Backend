@@ -3,6 +3,7 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 import com.github.wilsonng234.simplesearchengine.backend.controller.DocumentController;
 import com.github.wilsonng234.simplesearchengine.backend.controller.WordController;
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
+import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import lombok.Data;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +42,8 @@ public class CrawlerService {
     private TitlePostingListService titlePostingListService;
     @Autowired
     private BodyPostingListService bodyPostingListService;
+    @Autowired
+    private ParentLinkService parentLinkService;
 
     @Data
     private class Crawler {
@@ -200,8 +203,12 @@ public class CrawlerService {
 
             // breadth-first search
             for (String childLink : childrenLinks) {
-                if (!crawledLinks.contains(childLink))
+                if (!crawledLinks.contains(childLink)) {
                     crawlers.add(new Crawler(childLink));
+
+                    ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(crawler.getUrl())));
+                    parentLinkService.putParentLink(parentLink);
+                }
             }
 
             crawledLinks.add(crawler.getUrl());

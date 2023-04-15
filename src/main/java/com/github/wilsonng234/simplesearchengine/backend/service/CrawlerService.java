@@ -1,7 +1,5 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
-import com.github.wilsonng234.simplesearchengine.backend.controller.DocumentController;
-import com.github.wilsonng234.simplesearchengine.backend.controller.WordController;
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
 import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
@@ -34,11 +32,9 @@ public class CrawlerService {
     }
 
     @Autowired
-    private WordController wordController;
-    @Autowired
     private WordService wordService;
     @Autowired
-    private DocumentController documentController;
+    private DocumentService documentService;
     @Autowired
     private TitlePostingListService titlePostingListService;
     @Autowired
@@ -190,9 +186,7 @@ public class CrawlerService {
                 logger.warn(exception.getMessage());
                 continue;
             }
-            Optional<String> optionalURL = Optional.of(crawler.getUrl());
-            Optional<String> optionalDocId = Optional.empty();
-            Optional<Document> optionalDocument = documentController.getDocument(optionalURL, optionalDocId).getBody();
+            Optional<Document> optionalDocument = documentService.getDocument(crawler.getUrl(), DocumentService.QueryType.URL);
 
             boolean indexedDocument = false;
             if (optionalDocument != null) {
@@ -210,13 +204,13 @@ public class CrawlerService {
             List<String> titleWords = crawler.getTitleWords();
             List<String> bodyWords = crawler.getBodyWords();
             List<String> titleWordIds = titleWords.stream()
-                    .map(word -> wordController.getWord(Optional.of(word), Optional.empty()).getBody()
+                    .map(word -> wordService.getWord(word, WordService.QueryType.WORD)
                             .orElseGet(() -> wordService.createWord(word)).getWordId()).toList();
             Map<String, Integer> titleWordIdFreqsMap = titleWordIds.stream().collect(Collectors.groupingBy(wordId -> wordId, Collectors.counting()))
                     .entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, freq -> freq.getValue().intValue()));
             List<String> bodyWordIds = bodyWords.stream()
-                    .map(word -> wordController.getWord(Optional.of(word), Optional.empty()).getBody()
+                    .map(word -> wordService.getWord(word, WordService.QueryType.WORD)
                             .orElseGet(() -> wordService.createWord(word)).getWordId()).toList();
             Map<String, Integer> bodyWordIdFreqsMap = bodyWordIds.stream().collect(Collectors.groupingBy(wordId -> wordId, Collectors.counting()))
                     .entrySet().stream()
@@ -227,12 +221,15 @@ public class CrawlerService {
 
             // update the forward index
             if (indexedDocument) {
-                document = documentController.putDocument(document).getBody();
+                document = documentService.putDocument(document);
             } else {
-                document = documentController.createDocument(document).getBody();
+                document = documentService.createDocument(document);
             }
-            if (document == null)
+            if (document == null) {
+                // fail documentRepository.save(document);
+                logger.warn("Fail to save document: " + crawler.getUrl());
                 continue;
+            }
 
             // TODO: update the inverted index
             String docId = document.getDocId();

@@ -4,6 +4,7 @@ import com.github.wilsonng234.simplesearchengine.backend.controller.DocumentCont
 import com.github.wilsonng234.simplesearchengine.backend.controller.WordController;
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
+import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import lombok.Data;
 import org.apache.logging.log4j.LogManager;
@@ -124,6 +125,38 @@ public class CrawlerService {
 
             return childrenLinks;
         }
+
+        private Map<String, List<Long>> getTitleWordPositions() {
+            List<String> words = NLPUtils.tokenize(document.head().text());
+            words = NLPUtils.removeStopWords(words);
+            words = NLPUtils.stemWords(words);
+
+            Map<String, List<Long>> wordPositions = new HashMap<>();
+            for (int i = 0; i < words.size(); i++) {
+                String word = words.get(i);
+                if (!wordPositions.containsKey(word))
+                    wordPositions.put(word, new LinkedList<>());
+                wordPositions.get(word).add((long) i);
+            }
+
+            return wordPositions;
+        }
+
+        private Map<String, List<Long>> getBodyWordPositions() {
+            List<String> words = NLPUtils.tokenize(document.body().text());
+            words = NLPUtils.removeStopWords(words);
+            words = NLPUtils.stemWords(words);
+
+            Map<String, List<Long>> wordPositions = new HashMap<>();
+            for (int i = 0; i < words.size(); i++) {
+                String word = words.get(i);
+                if (!wordPositions.containsKey(word))
+                    wordPositions.put(word, new LinkedList<>());
+                wordPositions.get(word).add((long) i);
+            }
+
+            return wordPositions;
+        }
     }
 
     public boolean crawl(String url, String pages) {
@@ -192,13 +225,41 @@ public class CrawlerService {
 
             Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordIdFreqsMap, bodyWordIdFreqsMap, childrenLinks);
 
-            // TODO: update the inverted index
-
             // update the forward index
             if (indexedDocument) {
-                documentController.putDocument(document);
+                document = documentController.putDocument(document).getBody();
             } else {
-                documentController.createDocument(document);
+                document = documentController.createDocument(document).getBody();
+            }
+            if (document == null)
+                continue;
+
+            // TODO: update the inverted index
+            String docId = document.getDocId();
+            Map<String, List<Long>> titleWordIdPositionsMap = crawler.getTitleWordPositions();
+            for (Map.Entry<String, List<Long>> wordIdPositions : titleWordIdPositionsMap.entrySet()) {
+                String word = wordIdPositions.getKey();
+                List<Long> positions = wordIdPositions.getValue();
+                String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
+                    logger.warn("Word not found: " + word);
+                    return wordService.createWord(word);
+                }).getWordId();
+
+                Posting posting = new Posting(docId, positions);
+                titlePostingListService.putPositingList(wordId, posting);
+            }
+
+            Map<String, List<Long>> bodyWordIdPositionsMap = crawler.getBodyWordPositions();
+            for (Map.Entry<String, List<Long>> wordIdPositions : bodyWordIdPositionsMap.entrySet()) {
+                String word = wordIdPositions.getKey();
+                List<Long> positions = wordIdPositions.getValue();
+                String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
+                    logger.warn("Word not found: " + word);
+                    return wordService.createWord(word);
+                }).getWordId();
+
+                Posting posting = new Posting(docId, positions);
+                bodyPostingListService.putPositingList(wordId, posting);
             }
 
             // breadth-first search

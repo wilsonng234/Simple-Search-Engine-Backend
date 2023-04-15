@@ -25,7 +25,7 @@ public class ParentLinkService {
 
         Set<String> parentUrls = parentLink.getParentUrls();
         if (parentUrls != null)
-            existingParentLink.getParentUrls().addAll(parentUrls);
+            parentUrls.addAll(existingParentLink.getParentUrls());
         parentLink.setParentUrls(parentUrls);
 
         return parentLinkRepository.save(parentLink);

@@ -199,6 +199,7 @@ public class CrawlerService {
             }
 
             // get the document
+            // TODO: use getTitleWordPositions instead of getTitleWords
             long size = crawler.getSize();
             String title = crawler.getTitle();
             List<String> titleWords = crawler.getTitleWords();

@@ -5,8 +5,8 @@ import com.github.wilsonng234.simplesearchengine.backend.repository.ParentLinkRe
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class ParentLinkService {
@@ -14,14 +14,18 @@ public class ParentLinkService {
     ParentLinkRepository parentLinkRepository;
 
     public ParentLink createParentLink(ParentLink parentLink) {
-        List<String> parentLinks = parentLink.getParentUrls() == null ? new LinkedList<>() : parentLink.getParentUrls();
+        Set<String> parentLinks = parentLink.getParentUrls() == null ? new HashSet<>() : parentLink.getParentUrls();
 
         return parentLinkRepository.insert(new ParentLink(parentLink.getUrl(), parentLinks));
     }
 
     public ParentLink putParentLink(ParentLink parentLink) {
-        if (parentLink.getParentUrls() == null)
-            parentLink.setParentUrls(new LinkedList<>());
+        ParentLink existingParentLink = parentLinkRepository.findById(parentLink.getUrl()).orElseGet(() -> createParentLink(parentLink));
+
+        Set<String> parentUrls = parentLink.getParentUrls();
+        if (parentUrls != null)
+            existingParentLink.getParentUrls().addAll(parentUrls);
+        parentLink.setParentUrls(parentUrls);
 
         return parentLinkRepository.save(parentLink);
     }

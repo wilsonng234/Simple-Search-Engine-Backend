@@ -17,4 +17,9 @@ public class ParentLink {
     private String url;
 
     private List<String> parentUrls;
+
+    public ParentLink(String url, List<String> parentUrls) {
+        this.url = url;
+        this.parentUrls = parentUrls;
+    }
 }

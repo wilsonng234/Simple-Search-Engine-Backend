@@ -231,8 +231,7 @@ public class CrawlerService {
                 logger.warn("Fail to save document: " + crawler.getUrl());
                 continue;
             }
-
-            // TODO: update the inverted index
+            
             String docId = document.getDocId();
             Map<String, List<Long>> titleWordIdPositionsMap = crawler.getTitleWordPositions();
             for (Map.Entry<String, List<Long>> wordIdPositions : titleWordIdPositionsMap.entrySet()) {

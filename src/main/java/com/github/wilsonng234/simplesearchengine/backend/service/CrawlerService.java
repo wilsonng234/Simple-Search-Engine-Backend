@@ -193,7 +193,7 @@ public class CrawlerService {
 
             // update the forward index
             if (indexedDocument) {
-//                documentController.putDocument(document);
+                documentController.putDocument(document);
             } else {
                 documentController.createDocument(document);
             }

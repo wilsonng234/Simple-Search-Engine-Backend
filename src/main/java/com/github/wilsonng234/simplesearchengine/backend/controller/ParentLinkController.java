@@ -18,4 +18,9 @@ public class ParentLinkController {
     public ResponseEntity<ParentLink> createParentLink(@RequestBody ParentLink parentLink) {
         return new ResponseEntity<>(parentLinkService.createParentLink(parentLink), HttpStatus.OK);
     }
+
+    @PutMapping
+    public ResponseEntity<ParentLink> putParentLink(@RequestBody ParentLink parentLink) {
+        return new ResponseEntity<>(parentLinkService.putParentLink(parentLink), HttpStatus.OK);
+    }
 }

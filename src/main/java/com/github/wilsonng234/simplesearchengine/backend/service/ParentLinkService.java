@@ -18,4 +18,11 @@ public class ParentLinkService {
 
         return parentLinkRepository.insert(new ParentLink(parentLink.getUrl(), parentLinks));
     }
+
+    public ParentLink putParentLink(ParentLink parentLink) {
+        if (parentLink.getParentUrls() == null)
+            parentLink.setParentUrls(new LinkedList<>());
+
+        return parentLinkRepository.save(parentLink);
+    }
 }

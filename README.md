@@ -19,6 +19,8 @@
     - Primary key: wordId
 - [X] Implement `bodyPostingsList` collection
     - Primary key: wordId
+- [ ] Implement `parentLinks` collection
+    - Primary key: docId
 
 ## Crawler
 

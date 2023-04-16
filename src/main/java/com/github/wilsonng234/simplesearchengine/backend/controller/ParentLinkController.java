@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -17,8 +17,13 @@ public class ParentLinkController {
     private ParentLinkService parentLinkService;
 
     @GetMapping
-    public ResponseEntity<List<ParentLink>> getAllParentLinks() {
-        return new ResponseEntity<>(parentLinkService.allParentLinks(), HttpStatus.OK);
+    public ResponseEntity<ParentLink> getParentLinks(@RequestParam String url) {
+        Optional<ParentLink> parentLinks = parentLinkService.getParentLinks(url);
+
+        if (parentLinks.isPresent())
+            return new ResponseEntity<>(parentLinks.get(), HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping

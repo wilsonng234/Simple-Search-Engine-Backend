@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -29,6 +30,10 @@ public class ParentLinkService {
         parentLink.setParentUrls(parentUrls);
 
         return parentLinkRepository.save(parentLink);
+    }
+
+    public Optional<ParentLink> getParentLinks(String url) {
+        return parentLinkRepository.findParentLinkByUrl(url);
     }
 
     public List<ParentLink> allParentLinks() {

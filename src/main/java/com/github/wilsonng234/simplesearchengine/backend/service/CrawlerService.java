@@ -103,8 +103,8 @@ public class CrawlerService {
             return words;
         }
 
-        private List<String> getChildrenLinks() {
-            List<String> childrenLinks = new LinkedList<>();
+        private Set<String> getChildrenLinks() {
+            Set<String> childrenLinks = new HashSet<>();
 
             Elements linksElements = document.select("a[href]");
             for (Element linkElement : linksElements) {
@@ -222,7 +222,7 @@ public class CrawlerService {
             Map<String, Integer> bodyWordIdFreqsMap = bodyWordIds.stream().collect(Collectors.groupingBy(wordId -> wordId, Collectors.counting()))
                     .entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, freq -> freq.getValue().intValue()));
-            List<String> childrenLinks = crawler.getChildrenLinks();
+            Set<String> childrenLinks = crawler.getChildrenLinks();
 
             Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordIdFreqsMap, bodyWordIdFreqsMap, childrenLinks);
 

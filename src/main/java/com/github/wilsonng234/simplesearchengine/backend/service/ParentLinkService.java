@@ -15,14 +15,14 @@ public class ParentLinkService {
     @Autowired
     ParentLinkRepository parentLinkRepository;
 
-    public ParentLink createParentLink(ParentLink parentLink) {
+    public ParentLink createParentLinks(ParentLink parentLink) {
         Set<String> parentLinks = parentLink.getParentUrls() == null ? new HashSet<>() : parentLink.getParentUrls();
 
         return parentLinkRepository.insert(new ParentLink(parentLink.getUrl(), parentLinks));
     }
 
-    public ParentLink putParentLink(ParentLink parentLink) {
-        ParentLink existingParentLink = parentLinkRepository.findById(parentLink.getUrl()).orElseGet(() -> createParentLink(parentLink));
+    public ParentLink putParentLinks(ParentLink parentLink) {
+        ParentLink existingParentLink = parentLinkRepository.findById(parentLink.getUrl()).orElseGet(() -> createParentLinks(parentLink));
 
         Set<String> parentUrls = parentLink.getParentUrls();
         if (parentUrls != null)

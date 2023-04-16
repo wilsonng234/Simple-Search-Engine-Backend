@@ -164,6 +164,12 @@ public class CrawlerService {
         Queue<Crawler> crawlers = new LinkedList<>();
         crawlers.add(new Crawler(url));
         Set<String> crawledLinks = new HashSet<>();
+
+        Optional<ParentLink> optionalParentLink = parentLinkService.getParentLinks(url);
+        if (optionalParentLink.isEmpty()) {
+            ParentLink originParentLink = new ParentLink(url, new HashSet<>());
+            parentLinkService.putParentLinks(originParentLink);
+        }
         while (crawledPages < pagesToCrawl && !crawlers.isEmpty()) {
             Crawler crawler = crawlers.poll();
 
@@ -231,7 +237,7 @@ public class CrawlerService {
                 logger.warn("Fail to save document: " + crawler.getUrl());
                 continue;
             }
-            
+
             String docId = document.getDocId();
             Map<String, List<Long>> titleWordIdPositionsMap = crawler.getTitleWordPositions();
             for (Map.Entry<String, List<Long>> wordIdPositions : titleWordIdPositionsMap.entrySet()) {
@@ -265,7 +271,7 @@ public class CrawlerService {
                     crawlers.add(new Crawler(childLink));
 
                     ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(crawler.getUrl())));
-                    parentLinkService.putParentLink(parentLink);
+                    parentLinkService.putParentLinks(parentLink);
                 }
             }
 

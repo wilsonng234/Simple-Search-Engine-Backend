@@ -157,7 +157,6 @@ public class CrawlerService {
 
     public boolean crawl(String url, String pages) {
         // Return: a boolean value indicating whether the crawling was successful or not
-        // TODO: Implement this method
         int pagesToCrawl = Integer.parseInt(pages);
         int crawledPages = 0;
 

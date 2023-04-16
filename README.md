@@ -31,3 +31,11 @@
               Default value: https://cse.ust.hk/
             - pages: number of pages to crawl  
               Default value: 30
+
+## Vector Space Model
+
+- [ ] Implement term weighting formula based on `tf*idf/max(tf)`
+- [ ] Implement Document Similarity based on cosine similarity measure
+- [ ] Implement mechanism to favor matches in title
+- [ ] Create api endpoint `api/v1/searchEngine`
+    - [ ] Return top-50 query results

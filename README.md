@@ -19,13 +19,13 @@
     - Primary key: wordId
 - [X] Implement `bodyPostingsList` collection
     - Primary key: wordId
-- [ ] Implement `parentLinks` collection
+- [X] Implement `parentLinks` collection
     - Primary key: docId
 
 ## Crawler
 
-- [ ] Implement crawler
-    - [ ] Create api endpoint `api/v1/crawler`
+- [X] Implement crawler
+    - [X] Create api endpoint `api/v1/crawler`
         - Query params:
             - url: url to crawl  
               Default value: https://cse.ust.hk/

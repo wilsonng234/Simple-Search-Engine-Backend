@@ -3,6 +3,7 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
 import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
+import com.github.wilsonng234.simplesearchengine.backend.util.CrawlerUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import lombok.Data;
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -19,7 +21,6 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class CrawlerService {
@@ -114,6 +115,7 @@ public class CrawlerService {
                 } catch (MalformedURLException | URISyntaxException e) {
                     // Ignore invalid links
 //                    logger.warn(e.getMessage());
+                    continue;
                 }
 
                 childrenLinks.add(childLink);
@@ -204,26 +206,39 @@ public class CrawlerService {
             }
 
             // get the document
-            // TODO: use getTitleWordPositions instead of getTitleWords
             long size = crawler.getSize();
             String title = crawler.getTitle();
-            List<String> titleWords = crawler.getTitleWords();
-            List<String> bodyWords = crawler.getBodyWords();
-            List<String> titleWordIds = titleWords.stream()
-                    .map(word -> wordService.getWord(word, WordService.QueryType.WORD)
-                            .orElseGet(() -> wordService.createWord(word)).getWordId()).toList();
-            Map<String, Integer> titleWordIdFreqsMap = titleWordIds.stream().collect(Collectors.groupingBy(wordId -> wordId, Collectors.counting()))
-                    .entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, freq -> freq.getValue().intValue()));
-            List<String> bodyWordIds = bodyWords.stream()
-                    .map(word -> wordService.getWord(word, WordService.QueryType.WORD)
-                            .orElseGet(() -> wordService.createWord(word)).getWordId()).toList();
-            Map<String, Integer> bodyWordIdFreqsMap = bodyWordIds.stream().collect(Collectors.groupingBy(wordId -> wordId, Collectors.counting()))
-                    .entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, freq -> freq.getValue().intValue()));
-            Set<String> childrenLinks = crawler.getChildrenLinks();
 
-            Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordIdFreqsMap, bodyWordIdFreqsMap, childrenLinks);
+            // set up titleWordFreqs
+            Map<String, List<Long>> titleWordPositions = crawler.getTitleWordPositions();
+            List<Pair<String, Integer>> titleWordFreqs = new ArrayList<>(titleWordPositions.size());
+            for (Map.Entry<String, List<Long>> entry : titleWordPositions.entrySet()) {
+                String titleWord = entry.getKey();
+                wordService.getWord(titleWord, WordService.QueryType.WORD)
+                        .orElseGet(() -> wordService.createWord(titleWord));
+                List<Long> positions = entry.getValue();
+                int freq = positions.size();
+
+                titleWordFreqs.add(Pair.of(titleWord, freq));
+            }
+            titleWordFreqs = CrawlerUtils.sortWordFreqs(titleWordFreqs);
+
+            // set up bodyWordFreqs
+            Map<String, List<Long>> bodyWordPositions = crawler.getBodyWordPositions();
+            List<Pair<String, Integer>> bodyWordFreqs = new ArrayList<>(bodyWordPositions.size());
+            for (Map.Entry<String, List<Long>> entry : bodyWordPositions.entrySet()) {
+                String bodyWord = entry.getKey();
+                wordService.getWord(bodyWord, WordService.QueryType.WORD)
+                        .orElseGet(() -> wordService.createWord(bodyWord));
+                List<Long> positions = entry.getValue();
+                int freq = positions.size();
+
+                bodyWordFreqs.add(Pair.of(bodyWord, freq));
+            }
+            bodyWordFreqs = CrawlerUtils.sortWordFreqs(bodyWordFreqs);
+
+            Set<String> childrenLinks = crawler.getChildrenLinks();
+            Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordFreqs, bodyWordFreqs, childrenLinks);
 
             // update the forward index
             if (indexedDocument) {
@@ -238,11 +253,11 @@ public class CrawlerService {
             }
 
             String docId = document.getDocId();
-            Map<String, List<Long>> titleWordIdPositionsMap = crawler.getTitleWordPositions();
-            for (Map.Entry<String, List<Long>> wordIdPositions : titleWordIdPositionsMap.entrySet()) {
-                String word = wordIdPositions.getKey();
-                List<Long> positions = wordIdPositions.getValue();
+            for (Map.Entry<String, List<Long>> wordPositions : titleWordPositions.entrySet()) {
+                String word = wordPositions.getKey();
+                List<Long> positions = wordPositions.getValue();
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
+                    // this is for double assurance
                     logger.warn("Word not found: " + word);
                     return wordService.createWord(word);
                 }).getWordId();
@@ -251,11 +266,11 @@ public class CrawlerService {
                 titlePostingListService.putPositingList(wordId, posting);
             }
 
-            Map<String, List<Long>> bodyWordIdPositionsMap = crawler.getBodyWordPositions();
-            for (Map.Entry<String, List<Long>> wordIdPositions : bodyWordIdPositionsMap.entrySet()) {
-                String word = wordIdPositions.getKey();
-                List<Long> positions = wordIdPositions.getValue();
+            for (Map.Entry<String, List<Long>> wordPositions : bodyWordPositions.entrySet()) {
+                String word = wordPositions.getKey();
+                List<Long> positions = wordPositions.getValue();
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
+                    // this is for double assurance
                     logger.warn("Word not found: " + word);
                     return wordService.createWord(word);
                 }).getWordId();

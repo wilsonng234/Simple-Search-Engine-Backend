@@ -104,6 +104,7 @@ public class SearchEngineService {
 
     private void setUpDocumentsVector() {
         // TODO: fix the maxTF and df computation if needed
+        // TODO: Implement mechanism to favor matches in title
         int numDocs = documents.size();
         for (Word word : words) {
             String wordId = word.getWordId();

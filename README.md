@@ -34,8 +34,8 @@
 
 ## Vector Space Model
 
-- [ ] Implement term weighting formula based on `tf*idf/max(tf)`
-- [ ] Implement Document Similarity based on cosine similarity measure
+- [X] Implement term weighting formula based on `tf*idf/max(tf)`
+- [X] Implement Document Similarity based on cosine similarity measure
 - [ ] Implement mechanism to favor matches in title
-- [ ] Create api endpoint `api/v1/searchEngine`
-    - [ ] Return top-50 query results
+- [X] Create api endpoint `api/v1/searchEngine`
+    - [X] Return top-50 query results

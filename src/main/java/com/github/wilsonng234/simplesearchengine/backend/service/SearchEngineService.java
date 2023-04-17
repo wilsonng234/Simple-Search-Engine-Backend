@@ -4,13 +4,18 @@ import com.github.wilsonng234.simplesearchengine.backend.model.*;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.SearchEngineUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.VSMUtils;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Scope("prototype")
 public class SearchEngineService {
     @Autowired
     private WordService wordService;
@@ -24,22 +29,47 @@ public class SearchEngineService {
     private List<Document> documents;
     private List<List<Double>> documentsVector;     // index1: docId, index2: wordID, value: termWeight
     private List<Double> queryVector;               // index: wordID, value: termWeight
+    @Getter
     private List<Double> scoresVector;              // index: docId, value: score
     private Map<String, Integer> wordsMap;          // key: wordId, value: index
     private Map<String, Integer> documentsMap;      // key: docId, value: index
 
-    public List<Document> search(String query) {
+    @Data
+    @AllArgsConstructor
+    public class QueryResult {
+        private double score;
+        private String docId;
+        private String url;
+        private long size;
+        private String title;
+        private long lastModificationDate;
+        private Map<String, Integer> titleWordIDFreqsMap;      // wordID, frequency
+        private Map<String, Integer> bodyWordIDFreqsMap;       // wordID, frequency
+        private Set<String> childrenUrls;
+    }
+
+    public List<QueryResult> search(String query) {
         setUp();
         setUpQueryVector(query);
         setUpScoresVector();
 
-        System.out.println("Query vector: " + queryVector);
-        System.out.println("Scores vector: " + scoresVector);
-
         List<Integer> topKIndices = SearchEngineUtils.getTopKIndices(scoresVector, 50);
-        return topKIndices.stream()
+        List<Document> topKDocuments = topKIndices.stream()
                 .map(index -> documents.get(index))
                 .collect(Collectors.toCollection(ArrayList::new));
+
+        int i = 0;
+        List<QueryResult> queryResults = new ArrayList<>(topKDocuments.size());
+        for (Document document : topKDocuments) {
+            QueryResult queryResult = new QueryResult(scoresVector.get(i), document.getDocId(),
+                    document.getUrl(), document.getSize(), document.getTitle(), document.getLastModificationDate(),
+                    document.getTitleWordIDFreqsMap(), document.getBodyWordIDFreqsMap(), document.getChildrenUrls());
+
+            queryResults.add(queryResult);
+            i++;
+        }
+
+        return queryResults;
     }
 
     private void setUpQueryVector(String query) {
@@ -108,7 +138,12 @@ public class SearchEngineService {
         int numDocs = documents.size();
         for (Word word : words) {
             String wordId = word.getWordId();
-            int wordIndex = wordsMap.get(wordId);
+            Integer wordIndex = wordsMap.get(wordId);
+
+            if (wordIndex == null) {
+                System.out.println("error!!!");
+                System.out.println("Word index is null" + word.getWord());
+            }
 
             TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
             BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
@@ -120,8 +155,8 @@ public class SearchEngineService {
             for (Posting posting : titlePostingList.getPostings()) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
-                if (docIndex == null)
-                    continue;
+//                if (docIndex == null)
+//                    continue;
                 List<Long> positions = posting.getWordPositions();
                 int tf = positions.size();
 
@@ -133,8 +168,8 @@ public class SearchEngineService {
             for (Posting posting : bodyPostingList.getPostings()) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
-                if (docIndex == null)
-                    continue;
+//                if (docIndex == null)
+//                    continue;
                 List<Long> positions = posting.getWordPositions();
                 int tf = positions.size();
 

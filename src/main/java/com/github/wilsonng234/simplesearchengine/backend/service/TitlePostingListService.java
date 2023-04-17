@@ -44,4 +44,10 @@ public class TitlePostingListService extends PostingListService {
         titlePostingList.setMaxTF(Math.max(titlePostingList.getMaxTF(), posting.getWordPositions().size()));
         return titlePostingListRepository.save(titlePostingList);
     }
+
+    @Override
+    public TitlePostingList getPostingList(String wordId) {
+        Optional<TitlePostingList> titlePostingListOptional = titlePostingListRepository.findTitlePostingListByWordId(wordId);
+        return titlePostingListOptional.orElseGet(() -> createPostingList(wordId));
+    }
 }

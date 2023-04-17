@@ -19,6 +19,12 @@ public class TitlePostingListController extends PostingListController {
     private TitlePostingListService titlePostingListService;
 
     @Override
+    @GetMapping("{wordId}")
+    public ResponseEntity<? extends PostingList> getPostingList(@PathVariable String wordId) {
+        return new ResponseEntity<>(titlePostingListService.getPostingList(wordId), HttpStatus.OK);
+    }
+
+    @Override
     @GetMapping
     public ResponseEntity<List<? extends PostingList>> getAllPostingLists() {
         return new ResponseEntity<>(titlePostingListService.allPostingLists(), HttpStatus.OK);

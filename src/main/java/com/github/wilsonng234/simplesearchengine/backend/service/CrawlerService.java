@@ -207,6 +207,9 @@ public class CrawlerService {
             // TODO: use getTitleWordPositions instead of getTitleWords
             long size = crawler.getSize();
             String title = crawler.getTitle();
+            Map<String, List<Long>> titleWordIdPositionsMap = crawler.getTitleWordPositions();
+
+
             List<String> titleWords = crawler.getTitleWords();
             List<String> bodyWords = crawler.getBodyWords();
             List<String> titleWordIds = titleWords.stream()
@@ -238,7 +241,6 @@ public class CrawlerService {
             }
 
             String docId = document.getDocId();
-            Map<String, List<Long>> titleWordIdPositionsMap = crawler.getTitleWordPositions();
             for (Map.Entry<String, List<Long>> wordIdPositions : titleWordIdPositionsMap.entrySet()) {
                 String word = wordIdPositions.getKey();
                 List<Long> positions = wordIdPositions.getValue();

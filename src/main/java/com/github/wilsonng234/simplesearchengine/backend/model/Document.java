@@ -4,8 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.util.Pair;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -19,8 +20,8 @@ public class Document {
     private long size;
     private String title;
     private long lastModificationDate;
-    private Map<String, Integer> titleWordFreqs;      // word, frequency
-    private Map<String, Integer> bodyWordFreqs;       // word, frequency
+    private List<Pair<String, Integer>> titleWordFreqs;      // word, frequency
+    private List<Pair<String, Integer>> bodyWordFreqs;       // word, frequency
     private Set<String> childrenUrls;
 
     public Document() {
@@ -33,8 +34,8 @@ public class Document {
     }
 
     public Document(String url, long size, String title, long lastModificationDate,
-                    Map<String, Integer> titleWordFreqs,
-                    Map<String, Integer> bodyWordFreqs,
+                    List<Pair<String, Integer>> titleWordFreqs,
+                    List<Pair<String, Integer>> bodyWordFreqs,
                     Set<String> childrenUrls) {
         this.url = url;
         this.size = size;

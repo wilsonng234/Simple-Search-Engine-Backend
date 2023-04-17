@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -43,8 +44,8 @@ public class SearchEngineService {
         private long size;
         private String title;
         private long lastModificationDate;
-        private Map<String, Integer> titleWordIDFreqsMap;      // wordID, frequency
-        private Map<String, Integer> bodyWordIDFreqsMap;       // wordID, frequency
+        private List<Pair<String, Integer>> titleWordFreqs;      // word, frequency
+        private List<Pair<String, Integer>> bodyWordFreqs;       // word, frequency
         private Set<String> childrenUrls;
     }
 

@@ -3,6 +3,7 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
 import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
+import com.github.wilsonng234.simplesearchengine.backend.util.CrawlerUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import lombok.Data;
 import org.apache.logging.log4j.LogManager;
@@ -114,6 +115,7 @@ public class CrawlerService {
                 } catch (MalformedURLException | URISyntaxException e) {
                     // Ignore invalid links
 //                    logger.warn(e.getMessage());
+                    continue;
                 }
 
                 childrenLinks.add(childLink);
@@ -219,6 +221,7 @@ public class CrawlerService {
 
                 titleWordFreqs.add(Pair.of(titleWord, freq));
             }
+            titleWordFreqs = CrawlerUtils.sortWordFreqs(titleWordFreqs);
 
             // set up bodyWordFreqs
             Map<String, List<Long>> bodyWordPositions = crawler.getBodyWordPositions();
@@ -232,6 +235,7 @@ public class CrawlerService {
 
                 bodyWordFreqs.add(Pair.of(bodyWord, freq));
             }
+            bodyWordFreqs = CrawlerUtils.sortWordFreqs(bodyWordFreqs);
 
             Set<String> childrenLinks = crawler.getChildrenLinks();
             Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordFreqs, bodyWordFreqs, childrenLinks);

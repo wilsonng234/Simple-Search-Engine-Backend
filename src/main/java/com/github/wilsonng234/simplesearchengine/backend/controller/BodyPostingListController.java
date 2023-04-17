@@ -19,6 +19,12 @@ public class BodyPostingListController extends PostingListController {
     private BodyPostingListService bodyPostingListService;
 
     @Override
+    @GetMapping("{wordId}")
+    public ResponseEntity<? extends PostingList> getPostingList(@PathVariable String wordId) {
+        return new ResponseEntity<>(bodyPostingListService.getPostingList(wordId), HttpStatus.OK);
+    }
+
+    @Override
     @GetMapping
     public ResponseEntity<List<? extends PostingList>> getAllPostingLists() {
         return new ResponseEntity<>(bodyPostingListService.allPostingLists(), HttpStatus.OK);

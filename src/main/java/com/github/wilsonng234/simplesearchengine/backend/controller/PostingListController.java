@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 public abstract class PostingListController {
+    @GetMapping("/{wordId}")
+    public abstract ResponseEntity<? extends PostingList> getPostingList(@PathVariable String wordId);
+
     @GetMapping
     public abstract ResponseEntity<List<? extends PostingList>> getAllPostingLists();
 

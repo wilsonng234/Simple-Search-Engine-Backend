@@ -13,4 +13,6 @@ public abstract class PostingListService {
     public abstract PostingList createPostingList(String wordId);
 
     public abstract PostingList putPositingList(String wordId, Posting posting);
+
+    public abstract PostingList getPostingList(String wordId);
 }

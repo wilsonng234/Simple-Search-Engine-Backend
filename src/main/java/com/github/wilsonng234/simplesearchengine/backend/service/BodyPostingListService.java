@@ -44,4 +44,10 @@ public class BodyPostingListService extends PostingListService {
         bodyPostingList.setMaxTF(Math.max(bodyPostingList.getMaxTF(), posting.getWordPositions().size()));
         return bodyPostingListRepository.save(bodyPostingList);
     }
+
+    @Override
+    public BodyPostingList getPostingList(String wordId) {
+        Optional<BodyPostingList> bodyPostingListOptional = bodyPostingListRepository.findBodyPostingListByWordId(wordId);
+        return bodyPostingListOptional.orElseGet(() -> createPostingList(wordId));
+    }
 }

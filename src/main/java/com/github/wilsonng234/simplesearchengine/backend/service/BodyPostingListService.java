@@ -5,6 +5,7 @@ import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
 import com.github.wilsonng234.simplesearchengine.backend.model.PostingList;
 import com.github.wilsonng234.simplesearchengine.backend.repository.BodyPostingListRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Scope("prototype")
 public class BodyPostingListService extends PostingListService {
     @Autowired
     private BodyPostingListRepository bodyPostingListRepository;

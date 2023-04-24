@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
+@Scope("prototype")
 public class CrawlerService {
     private static final Logger logger = LogManager.getLogger(CrawlerService.class);
     public static SimpleDateFormat simpleDateFormat;

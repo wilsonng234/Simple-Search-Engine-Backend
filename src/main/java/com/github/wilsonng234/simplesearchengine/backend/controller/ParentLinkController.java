@@ -3,6 +3,7 @@ package com.github.wilsonng234.simplesearchengine.backend.controller;
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
 import com.github.wilsonng234.simplesearchengine.backend.service.ParentLinkService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.Optional;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("api/v1/parentLinks")
+@Scope("prototype")
 public class ParentLinkController {
     @Autowired
     private ParentLinkService parentLinkService;

@@ -3,6 +3,7 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
 import com.github.wilsonng234.simplesearchengine.backend.repository.ParentLinkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
+@Scope("prototype")
 public class ParentLinkService {
     @Autowired
     ParentLinkRepository parentLinkRepository;

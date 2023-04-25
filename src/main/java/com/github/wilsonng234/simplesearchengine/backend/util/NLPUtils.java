@@ -50,4 +50,12 @@ public abstract class NLPUtils {
     public static List<String> stemWords(List<String> words) {
         return words.stream().map(porterStemmer::stemWord).collect(Collectors.toCollection(LinkedList::new));
     }
+
+    public static List<String> nGrams(List<String> words, int n) {
+        List<String> nGrams = new LinkedList<>();
+        for (int i = 0; i < words.size() - n + 1; i++)
+            nGrams.add(String.join(" ", words.subList(i, i + n)));
+        
+        return nGrams;
+    }
 }

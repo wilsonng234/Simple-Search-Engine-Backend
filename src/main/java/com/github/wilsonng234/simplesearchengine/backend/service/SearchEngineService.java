@@ -78,9 +78,32 @@ public class SearchEngineService {
         // TODO: Fix the query vector computation if needed
         List<String> queryWords = NLPUtils.tokenize(query);
         queryWords = NLPUtils.removeStopWords(queryWords);
-        queryWords = NLPUtils.stemWords(queryWords);
+        queryWords = queryWords.stream().map(
+                queryWord -> {
+                    boolean startWithQuote = queryWord.startsWith("\"");
+                    boolean endWithQuote = queryWord.endsWith("\"");
+
+                    if (startWithQuote)
+                        queryWord = queryWord.substring(1);
+                    if (endWithQuote)
+                        queryWord = queryWord.substring(0, queryWord.length() - 1);
+                    queryWord = NLPUtils.stemWord(queryWord);
+
+                    if (startWithQuote)
+                        queryWord = "\"" + queryWord;
+                    if (endWithQuote)
+                        queryWord = queryWord + "\"";
+
+                    return queryWord;
+                }
+        ).collect(Collectors.toCollection(ArrayList::new));
 
         for (String queryWord : queryWords) {
+            if (queryWord.startsWith("\""))
+                queryWord = queryWord.substring(1);
+            if (queryWord.endsWith("\""))
+                queryWord = queryWord.substring(0, queryWord.length() - 1);
+
             Optional<Word> wordIdOptional = wordService.getWord(queryWord, WordService.QueryType.WORD);
             if (wordIdOptional.isPresent()) {
                 String wordId = wordIdOptional.get().getWordId();
@@ -91,9 +114,10 @@ public class SearchEngineService {
             }
         }
 
-        List<String> phrases = NLPUtils.parsePhraseSearchQuery(query);
+        List<String> phrases = NLPUtils.parsePhraseSearchQuery(String.join(" ", queryWords));
         for (String phrase : phrases) {
             Optional<Word> wordIdOptional = wordService.getWord(phrase, WordService.QueryType.WORD);
+
             if (wordIdOptional.isPresent()) {
                 String wordId = wordIdOptional.get().getWordId();
                 Integer wordIndex = wordsMap.get(wordId);
@@ -109,7 +133,8 @@ public class SearchEngineService {
             List<Double> documentVector = documentsVector.get(i);
             double score = VSMUtils.getCosineSimilarity(documentVector, queryVector);
 
-            scoresVector.set(i, score);
+            if (!Double.isNaN(score))
+                scoresVector.set(i, score);
         }
     }
 

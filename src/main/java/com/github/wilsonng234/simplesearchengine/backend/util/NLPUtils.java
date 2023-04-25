@@ -47,6 +47,10 @@ public abstract class NLPUtils {
         return words.stream().filter(word -> !stopWords.contains(word.toLowerCase())).collect(Collectors.toCollection(LinkedList::new));
     }
 
+    public static String stemWord(String word) {
+        return porterStemmer.stemWord(word);
+    }
+    
     public static List<String> stemWords(List<String> words) {
         return words.stream().map(porterStemmer::stemWord).collect(Collectors.toCollection(LinkedList::new));
     }

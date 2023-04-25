@@ -61,8 +61,6 @@ public class CrawlerService {
             if (this.response == null) {
                 this.response = org.jsoup.Jsoup.connect(this.url).execute().bufferUp();
                 this.document = this.response.parse();
-
-                logger.debug(this.document.equals(org.jsoup.Jsoup.connect(this.url).get()));
             }
         }
 

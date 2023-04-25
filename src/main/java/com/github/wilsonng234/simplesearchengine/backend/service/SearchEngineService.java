@@ -76,35 +76,29 @@ public class SearchEngineService {
 
     private void setUpQueryVector(String query) {
         // TODO: Fix the query vector computation if needed
-        List<String> queryWords = NLPUtils.tokenize(query);
-        queryWords = NLPUtils.removeStopWords(queryWords);
-        queryWords = queryWords.stream().map(
-                queryWord -> {
-                    boolean startWithQuote = queryWord.startsWith("\"");
-                    boolean endWithQuote = queryWord.endsWith("\"");
+        List<String> normalWords = NLPUtils.tokenize(query);
+        normalWords = NLPUtils.removeStopWords(normalWords);
+        normalWords = normalWords.stream().map(
+                normalWord -> {
+                    if (normalWord.equals("\""))
+                        return normalWord;
+
+                    boolean startWithQuote = normalWord.startsWith("\"");
+                    boolean endWithQuote = normalWord.endsWith("\"");
 
                     if (startWithQuote)
-                        queryWord = queryWord.substring(1);
+                        normalWord = normalWord.substring(1);
                     if (endWithQuote)
-                        queryWord = queryWord.substring(0, queryWord.length() - 1);
-                    queryWord = NLPUtils.stemWord(queryWord);
+                        normalWord = normalWord.substring(0, normalWord.length() - 1);
 
-                    if (startWithQuote)
-                        queryWord = "\"" + queryWord;
-                    if (endWithQuote)
-                        queryWord = queryWord + "\"";
+                    normalWord = NLPUtils.stemWord(normalWord);
 
-                    return queryWord;
+                    return normalWord;
                 }
-        ).collect(Collectors.toCollection(ArrayList::new));
+        ).collect(Collectors.toCollection(LinkedList::new));
 
-        for (String queryWord : queryWords) {
-            if (queryWord.startsWith("\""))
-                queryWord = queryWord.substring(1);
-            if (queryWord.endsWith("\""))
-                queryWord = queryWord.substring(0, queryWord.length() - 1);
-
-            Optional<Word> wordIdOptional = wordService.getWord(queryWord, WordService.QueryType.WORD);
+        for (String normalWord : normalWords) {
+            Optional<Word> wordIdOptional = wordService.getWord(normalWord, WordService.QueryType.WORD);
             if (wordIdOptional.isPresent()) {
                 String wordId = wordIdOptional.get().getWordId();
                 Integer wordIndex = wordsMap.get(wordId);
@@ -114,16 +108,28 @@ public class SearchEngineService {
             }
         }
 
-        List<String> phrases = NLPUtils.parsePhraseSearchQuery(String.join(" ", queryWords));
-        for (String phrase : phrases) {
+        List<String> phraseWords = NLPUtils.parsePhraseSearchQuery(query);
+
+        phraseWords = phraseWords.stream().map(
+                words -> {
+                    List<String> wordsList = NLPUtils.tokenize(words);
+                    wordsList = NLPUtils.removeStopWords(wordsList);
+                    wordsList = NLPUtils.stemWords(wordsList);
+
+                    return String.join(" ", wordsList);
+                }
+        ).collect(Collectors.toCollection(LinkedList::new));
+
+        for (String phrase : phraseWords) {
             Optional<Word> wordIdOptional = wordService.getWord(phrase, WordService.QueryType.WORD);
 
             if (wordIdOptional.isPresent()) {
                 String wordId = wordIdOptional.get().getWordId();
                 Integer wordIndex = wordsMap.get(wordId);
 
-                if (wordIndex != null)
+                if (wordIndex != null) {
                     queryVector.set(wordIndex, queryVector.get(wordIndex) + 10.0);
+                }
             }
         }
     }

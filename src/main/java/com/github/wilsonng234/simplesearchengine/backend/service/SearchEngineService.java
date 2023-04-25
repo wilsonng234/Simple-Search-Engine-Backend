@@ -89,6 +89,18 @@ public class SearchEngineService {
                     queryVector.set(wordIndex, queryVector.get(wordIndex) + 1.0);
             }
         }
+
+        List<String> phrases = NLPUtils.parsePhraseSearchQuery(query);
+        for (String phrase : phrases) {
+            Optional<Word> wordIdOptional = wordService.getWord(phrase, WordService.QueryType.WORD);
+            if (wordIdOptional.isPresent()) {
+                String wordId = wordIdOptional.get().getWordId();
+                Integer wordIndex = wordsMap.get(wordId);
+
+                if (wordIndex != null)
+                    queryVector.set(wordIndex, queryVector.get(wordIndex) + 10.0);
+            }
+        }
     }
 
     private void setUpScoresVector() {

@@ -69,6 +69,7 @@ public class SearchEngineService {
             queryResults.add(queryResult);
             i++;
         }
+        queryResults.sort(Comparator.comparingDouble(QueryResult::getScore).reversed());
 
         return queryResults;
     }

@@ -39,3 +39,8 @@
 - [ ] Implement mechanism to favor matches in title
 - [X] Create api endpoint `api/v1/searchEngine`
     - [X] Return top-50 query results
+- [ ] Implement phrase search
+    - [ ] Implement bi-gram terms
+    - [ ] Implement tri-gram terms
+    - [ ] Parse query to find phrase terms
+ 

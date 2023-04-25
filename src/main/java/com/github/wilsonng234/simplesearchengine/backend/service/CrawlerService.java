@@ -137,6 +137,25 @@ public class CrawlerService {
                 wordPositions.get(word).add((long) i);
             }
 
+            List<String> biGrams = NLPUtils.nGrams(words, 2);
+            List<String> triGrams = NLPUtils.nGrams(words, 3);
+
+            // add biGrams
+            for (int i = 0; i < biGrams.size(); i++) {
+                String biGram = biGrams.get(i);
+                if (!wordPositions.containsKey(biGram))
+                    wordPositions.put(biGram, new LinkedList<>());
+                wordPositions.get(biGram).add((long) i);
+            }
+
+            // add triGrams
+            for (int i = 0; i < triGrams.size(); i++) {
+                String triGram = triGrams.get(i);
+                if (!wordPositions.containsKey(triGram))
+                    wordPositions.put(triGram, new LinkedList<>());
+                wordPositions.get(triGram).add((long) i);
+            }
+
             return wordPositions;
         }
 
@@ -151,6 +170,25 @@ public class CrawlerService {
                 if (!wordPositions.containsKey(word))
                     wordPositions.put(word, new LinkedList<>());
                 wordPositions.get(word).add((long) i);
+            }
+
+            List<String> biGrams = NLPUtils.nGrams(words, 2);
+            List<String> triGrams = NLPUtils.nGrams(words, 3);
+
+            // add biGrams
+            for (int i = 0; i < biGrams.size(); i++) {
+                String biGram = biGrams.get(i);
+                if (!wordPositions.containsKey(biGram))
+                    wordPositions.put(biGram, new LinkedList<>());
+                wordPositions.get(biGram).add((long) i);
+            }
+
+            // add triGrams
+            for (int i = 0; i < triGrams.size(); i++) {
+                String triGram = triGrams.get(i);
+                if (!wordPositions.containsKey(triGram))
+                    wordPositions.put(triGram, new LinkedList<>());
+                wordPositions.get(triGram).add((long) i);
             }
 
             return wordPositions;

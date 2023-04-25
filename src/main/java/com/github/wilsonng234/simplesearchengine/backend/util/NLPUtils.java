@@ -55,7 +55,25 @@ public abstract class NLPUtils {
         List<String> nGrams = new LinkedList<>();
         for (int i = 0; i < words.size() - n + 1; i++)
             nGrams.add(String.join(" ", words.subList(i, i + n)));
-        
+
         return nGrams;
+    }
+
+    public static List<String> parsePhraseSearchQuery(String query) {
+        List<Integer> quotationMarksIndices = new LinkedList<>();
+        for (int i = 0; i < query.length(); i++) {
+            if (query.charAt(i) == '"')
+                quotationMarksIndices.add(i);
+        }
+
+        if (quotationMarksIndices.size() % 2 != 0) {
+            logger.warn("Invalid phrase search query: " + query);
+        }
+
+        List<String> phrases = new LinkedList<>();
+        for (int i = 0; i < quotationMarksIndices.size(); i += 2)
+            phrases.add(query.substring(quotationMarksIndices.get(i) + 1, quotationMarksIndices.get(i + 1)));
+
+        return phrases;
     }
 }

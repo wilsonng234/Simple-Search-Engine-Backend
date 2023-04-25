@@ -50,7 +50,7 @@ public abstract class NLPUtils {
     public static String stemWord(String word) {
         return porterStemmer.stemWord(word);
     }
-    
+
     public static List<String> stemWords(List<String> words) {
         return words.stream().map(porterStemmer::stemWord).collect(Collectors.toCollection(LinkedList::new));
     }
@@ -75,8 +75,11 @@ public abstract class NLPUtils {
         }
 
         List<String> phrases = new LinkedList<>();
-        for (int i = 0; i < quotationMarksIndices.size(); i += 2)
-            phrases.add(query.substring(quotationMarksIndices.get(i) + 1, quotationMarksIndices.get(i + 1)));
+        for (int i = 0; i + 1 < quotationMarksIndices.size(); i += 2) {
+            String phrase = query.substring(quotationMarksIndices.get(i) + 1, quotationMarksIndices.get(i + 1));
+            phrase = phrase.strip();
+            phrases.add(phrase);
+        }
 
         return phrases;
     }

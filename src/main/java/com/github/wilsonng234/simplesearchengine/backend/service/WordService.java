@@ -4,6 +4,11 @@ import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.repository.WordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +23,8 @@ public class WordService {
 
     @Autowired
     private WordRepository wordRepository;
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     /**
      * @param key  -  word or wordId
@@ -36,9 +43,12 @@ public class WordService {
         return wordRepository.findAll();
     }
 
-    public Word createWord(String word) {
-        Word createdWord = new Word(word);
+    public Word putWord(String word) {
+        Query query = new Query(Criteria.where("word").is(word));
+        Update update = new Update().set("word", word);
+        FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
+        Class<Word> cls = Word.class;
 
-        return wordRepository.insert(createdWord);
+        return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
     }
 }

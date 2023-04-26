@@ -277,7 +277,7 @@ public class CrawlerService {
             for (Map.Entry<String, List<Long>> entry : titleWordPositions.entrySet()) {
                 String titleWord = entry.getKey();
                 wordService.getWord(titleWord, WordService.QueryType.WORD)
-                        .orElseGet(() -> wordService.createWord(titleWord));
+                        .orElseGet(() -> wordService.putWord(titleWord));
                 List<Long> positions = entry.getValue();
                 int freq = positions.size();
 
@@ -291,7 +291,7 @@ public class CrawlerService {
             for (Map.Entry<String, List<Long>> entry : bodyWordPositions.entrySet()) {
                 String bodyWord = entry.getKey();
                 wordService.getWord(bodyWord, WordService.QueryType.WORD)
-                        .orElseGet(() -> wordService.createWord(bodyWord));
+                        .orElseGet(() -> wordService.putWord(bodyWord));
                 List<Long> positions = entry.getValue();
                 int freq = positions.size();
 
@@ -303,11 +303,8 @@ public class CrawlerService {
             Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordFreqs, bodyWordFreqs, childrenLinks);
 
             // update the forward index
-            if (indexedDocument) {
-                document = documentService.putDocument(document);
-            } else {
-                document = documentService.createDocument(document);
-            }
+            document = documentService.putDocument(document);
+
             if (document == null) {
                 // fail documentRepository.save(document);
                 logger.warn("Fail to save document: " + crawler.getUrl());
@@ -321,7 +318,7 @@ public class CrawlerService {
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
                     // this is for double assurance
                     logger.warn("Word not found: " + word);
-                    return wordService.createWord(word);
+                    return wordService.putWord(word);
                 }).getWordId();
 
                 Posting posting = new Posting(docId, positions);
@@ -334,7 +331,7 @@ public class CrawlerService {
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
                     // this is for double assurance
                     logger.warn("Word not found: " + word);
-                    return wordService.createWord(word);
+                    return wordService.putWord(word);
                 }).getWordId();
 
                 Posting posting = new Posting(docId, positions);

@@ -37,15 +37,6 @@ public class DocumentController {
         return new ResponseEntity<>(documentService.allDocuments(), HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<Document> createDocument(@RequestBody Document document) {
-        return new ResponseEntity<>(documentService.createDocument(document), HttpStatus.CREATED);
-    }
-
-    /**
-     * @param document - document to be updated (must have url field)
-     * @return - updated document
-     **/
     @PutMapping
     public ResponseEntity<Document> putDocument(@RequestBody Document document) {
         return new ResponseEntity<>(documentService.putDocument(document), HttpStatus.OK);

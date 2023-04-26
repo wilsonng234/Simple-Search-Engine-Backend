@@ -203,6 +203,18 @@ public class CrawlerService {
         }
     }
 
+    private void bfs(Queue<Crawler> crawlers, Set<String> crawledLinks, Set<String> childrenLinks, String url) {
+        // breadth-first search
+        for (String childLink : childrenLinks) {
+            if (!crawledLinks.contains(childLink)) {
+                crawlers.add(new Crawler(childLink));
+
+                ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(url)));
+                parentLinkService.putParentLinks(parentLink);
+            }
+        }
+    }
+
     public boolean crawl(String url, String pages) {
         // Return: a boolean value indicating whether the crawling was successful or not
         int pagesToCrawl = Integer.parseInt(pages);
@@ -246,8 +258,12 @@ public class CrawlerService {
                 indexedDocument = optionalDocument.isPresent();
                 if (indexedDocument) {
                     Document document = optionalDocument.get();
-                    if (document.getLastModificationDate() == lastModificationDate)
+                    if (document.getLastModificationDate() == lastModificationDate) {
+                        // breadth-first search
+                        bfs(crawlers, crawledLinks, crawler.getChildrenLinks(), crawler.getUrl());
+
                         continue;
+                    }
                 }
             }
 
@@ -326,14 +342,7 @@ public class CrawlerService {
             }
 
             // breadth-first search
-            for (String childLink : childrenLinks) {
-                if (!crawledLinks.contains(childLink)) {
-                    crawlers.add(new Crawler(childLink));
-
-                    ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(crawler.getUrl())));
-                    parentLinkService.putParentLinks(parentLink);
-                }
-            }
+            bfs(crawlers, crawledLinks, childrenLinks, crawler.getUrl());
 
             crawledLinks.add(crawler.getUrl());
             crawledPages++;

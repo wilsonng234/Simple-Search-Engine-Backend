@@ -6,6 +6,11 @@ import com.github.wilsonng234.simplesearchengine.backend.model.PostingList;
 import com.github.wilsonng234.simplesearchengine.backend.repository.BodyPostingListRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -19,6 +24,8 @@ public class BodyPostingListService extends PostingListService {
     private BodyPostingListRepository bodyPostingListRepository;
     @Autowired
     private PostingService postingService;
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @Override
     public List<? extends PostingList> allPostingLists() {
@@ -32,21 +39,16 @@ public class BodyPostingListService extends PostingListService {
 
     @Override
     public BodyPostingList putPositingList(String wordId, Posting posting) {
-        Optional<BodyPostingList> bodyPostingListOptional = bodyPostingListRepository.findBodyPostingListByWordId(wordId);
-        BodyPostingList bodyPostingList = bodyPostingListOptional.orElseGet(() -> createPostingList(wordId));
+        String postingId = posting.getPostingId();
+        if (postingId == null)
+            postingId = postingService.putPosting(posting).getPostingId();
 
-        List<String> postingIds = bodyPostingList.getPostingIds();
-        List<String> filteredPostings = postingIds.stream().filter(p -> p.equals(posting.getPostingId())).toList();
+        Query query = new Query(Criteria.where("wordId").is(wordId));
+        Update update = new Update().addToSet("postingIds", postingId);
+        FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
+        Class<BodyPostingList> cls = BodyPostingList.class;
 
-        if (filteredPostings.size() == 0) {
-            postingIds.add(posting.getPostingId());
-        } else {
-            postingService.getPosting(filteredPostings.get(0)).get().setWordPositions(posting.getWordPositions());
-        }
-
-        bodyPostingList.setPostingIds(postingIds);
-        bodyPostingList.setMaxTF(Math.max(bodyPostingList.getMaxTF(), posting.getWordPositions().size()));
-        return bodyPostingListRepository.save(bodyPostingList);
+        return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
     }
 
     @Override

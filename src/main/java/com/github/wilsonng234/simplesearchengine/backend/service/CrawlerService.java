@@ -112,6 +112,8 @@ public class CrawlerService {
             Elements linksElements = document.select("a[href]");
             for (Element linkElement : linksElements) {
                 String childLink = linkElement.attr("abs:href");
+                if (!childLink.startsWith("http") || childLink.endsWith(".pdf"))
+                    continue;
                 try {
                     new URL(childLink).toURI();
                 } catch (MalformedURLException | URISyntaxException e) {

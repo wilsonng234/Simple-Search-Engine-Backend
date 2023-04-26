@@ -39,6 +39,8 @@ public class CrawlerService {
     @Autowired
     private DocumentService documentService;
     @Autowired
+    private PostingService postingService;
+    @Autowired
     private TitlePostingListService titlePostingListService;
     @Autowired
     private BodyPostingListService bodyPostingListService;
@@ -321,7 +323,7 @@ public class CrawlerService {
                     return wordService.putWord(word);
                 }).getWordId();
 
-                Posting posting = new Posting(docId, positions);
+                Posting posting = postingService.putPosting(wordId, docId, positions);
                 titlePostingListService.putPositingList(wordId, posting);
             }
 
@@ -334,7 +336,7 @@ public class CrawlerService {
                     return wordService.putWord(word);
                 }).getWordId();
 
-                Posting posting = new Posting(docId, positions);
+                Posting posting = postingService.putPosting(wordId, docId, positions);
                 bodyPostingListService.putPositingList(wordId, posting);
             }
 

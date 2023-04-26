@@ -191,6 +191,14 @@ public class CrawlerService {
                 wordPositions.get(triGram).add((long) i);
             }
 
+//            for (String biGram : biGrams)
+//                if (biGram.split("\\s+").length != 2) {
+//                    logger.warn("BiGram length != 2: " + biGram);
+//
+//            for (String triGram : triGrams)
+//                if (triGram.split("\\s+").length != 3) {
+//                    logger.warn("TriGram length != 3: " + triGram);
+
             return wordPositions;
         }
     }

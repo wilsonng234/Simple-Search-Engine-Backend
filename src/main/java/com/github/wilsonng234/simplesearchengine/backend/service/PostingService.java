@@ -1,6 +1,7 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
+import com.mongodb.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -30,7 +31,13 @@ public class PostingService {
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<Posting> cls = Posting.class;
 
-        return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        try {
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        } catch (DuplicateKeyException duplicateKeyException) {
+            // update again if duplicate key exception
+            System.out.println(duplicateKeyException.getMessage());
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        }
     }
 
     public Posting putPosting(String wordId, String docId, List<Long> positions) {
@@ -40,6 +47,12 @@ public class PostingService {
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<Posting> cls = Posting.class;
 
-        return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        try {
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        } catch (DuplicateKeyException duplicateKeyException) {
+            // update again if duplicate key exception
+            System.out.println("duplicateKeyException");
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        }
     }
 }

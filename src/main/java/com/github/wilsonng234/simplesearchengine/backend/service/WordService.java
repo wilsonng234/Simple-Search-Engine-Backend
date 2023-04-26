@@ -2,6 +2,7 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.repository.WordRepository;
+import com.mongodb.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -49,6 +50,12 @@ public class WordService {
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<Word> cls = Word.class;
 
-        return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        try {
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        } catch (DuplicateKeyException duplicateKeyException) {
+            // update again if duplicate key exception
+            System.out.println(duplicateKeyException.getMessage());
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
 import com.github.wilsonng234.simplesearchengine.backend.model.PostingList;
 import com.github.wilsonng234.simplesearchengine.backend.model.TitlePostingList;
 import com.github.wilsonng234.simplesearchengine.backend.repository.TitlePostingListRepository;
+import com.mongodb.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -48,7 +49,13 @@ public class TitlePostingListService extends PostingListService {
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<TitlePostingList> cls = TitlePostingList.class;
 
-        return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        try {
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        } catch (DuplicateKeyException duplicateKeyException) {
+            // update again if duplicate key exception
+            System.out.println(duplicateKeyException.getMessage());
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        }
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.repository.DocumentRepository;
+import com.mongodb.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -56,6 +57,12 @@ public class DocumentService {
         FindAndModifyOptions findAndModifyOptions = org.springframework.data.mongodb.core.FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<Document> cls = Document.class;
 
-        return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        try {
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        } catch (DuplicateKeyException duplicateKeyException) {
+            // update again if duplicate key exception
+            System.out.println(duplicateKeyException.getMessage());
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        }
     }
 }

@@ -137,6 +137,25 @@ public class CrawlerService {
                 wordPositions.get(word).add((long) i);
             }
 
+            List<String> biGrams = NLPUtils.nGrams(words, 2);
+            List<String> triGrams = NLPUtils.nGrams(words, 3);
+
+            // add biGrams
+            for (int i = 0; i < biGrams.size(); i++) {
+                String biGram = biGrams.get(i);
+                if (!wordPositions.containsKey(biGram))
+                    wordPositions.put(biGram, new LinkedList<>());
+                wordPositions.get(biGram).add((long) i);
+            }
+
+            // add triGrams
+            for (int i = 0; i < triGrams.size(); i++) {
+                String triGram = triGrams.get(i);
+                if (!wordPositions.containsKey(triGram))
+                    wordPositions.put(triGram, new LinkedList<>());
+                wordPositions.get(triGram).add((long) i);
+            }
+
             return wordPositions;
         }
 
@@ -153,7 +172,46 @@ public class CrawlerService {
                 wordPositions.get(word).add((long) i);
             }
 
+            List<String> biGrams = NLPUtils.nGrams(words, 2);
+            List<String> triGrams = NLPUtils.nGrams(words, 3);
+
+            // add biGrams
+            for (int i = 0; i < biGrams.size(); i++) {
+                String biGram = biGrams.get(i);
+                if (!wordPositions.containsKey(biGram))
+                    wordPositions.put(biGram, new LinkedList<>());
+                wordPositions.get(biGram).add((long) i);
+            }
+
+            // add triGrams
+            for (int i = 0; i < triGrams.size(); i++) {
+                String triGram = triGrams.get(i);
+                if (!wordPositions.containsKey(triGram))
+                    wordPositions.put(triGram, new LinkedList<>());
+                wordPositions.get(triGram).add((long) i);
+            }
+
+//            for (String biGram : biGrams)
+//                if (biGram.split("\\s+").length != 2)
+//                    logger.warn("BiGram length != 2: " + biGram);
+//
+//            for (String triGram : triGrams)
+//                if (triGram.split("\\s+").length != 3)
+//                    logger.warn("TriGram length != 3: " + triGram);
+
             return wordPositions;
+        }
+    }
+
+    private void bfs(Queue<Crawler> crawlers, Set<String> crawledLinks, Set<String> childrenLinks, String url) {
+        // breadth-first search
+        for (String childLink : childrenLinks) {
+            if (!crawledLinks.contains(childLink)) {
+                crawlers.add(new Crawler(childLink));
+
+                ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(url)));
+                parentLinkService.putParentLinks(parentLink);
+            }
         }
     }
 
@@ -200,8 +258,12 @@ public class CrawlerService {
                 indexedDocument = optionalDocument.isPresent();
                 if (indexedDocument) {
                     Document document = optionalDocument.get();
-                    if (document.getLastModificationDate() == lastModificationDate)
+                    if (document.getLastModificationDate() == lastModificationDate) {
+                        // breadth-first search
+                        bfs(crawlers, crawledLinks, crawler.getChildrenLinks(), crawler.getUrl());
+
                         continue;
+                    }
                 }
             }
 
@@ -280,14 +342,7 @@ public class CrawlerService {
             }
 
             // breadth-first search
-            for (String childLink : childrenLinks) {
-                if (!crawledLinks.contains(childLink)) {
-                    crawlers.add(new Crawler(childLink));
-
-                    ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(crawler.getUrl())));
-                    parentLinkService.putParentLinks(parentLink);
-                }
-            }
+            bfs(crawlers, crawledLinks, childrenLinks, crawler.getUrl());
 
             crawledLinks.add(crawler.getUrl());
             crawledPages++;

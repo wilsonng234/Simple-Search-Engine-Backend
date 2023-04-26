@@ -69,24 +69,67 @@ public class SearchEngineService {
             queryResults.add(queryResult);
             i++;
         }
+        queryResults.sort(Comparator.comparingDouble(QueryResult::getScore).reversed());
 
         return queryResults;
     }
 
     private void setUpQueryVector(String query) {
         // TODO: Fix the query vector computation if needed
-        List<String> queryWords = NLPUtils.tokenize(query);
-        queryWords = NLPUtils.removeStopWords(queryWords);
-        queryWords = NLPUtils.stemWords(queryWords);
+        List<String> normalWords = NLPUtils.tokenize(query);
+        normalWords = NLPUtils.removeStopWords(normalWords);
+        normalWords = normalWords.stream().map(
+                normalWord -> {
+                    if (normalWord.equals("\""))
+                        return normalWord;
 
-        for (String queryWord : queryWords) {
-            Optional<Word> wordIdOptional = wordService.getWord(queryWord, WordService.QueryType.WORD);
+                    boolean startWithQuote = normalWord.startsWith("\"");
+                    boolean endWithQuote = normalWord.endsWith("\"");
+
+                    if (startWithQuote)
+                        normalWord = normalWord.substring(1);
+                    if (endWithQuote)
+                        normalWord = normalWord.substring(0, normalWord.length() - 1);
+
+                    normalWord = NLPUtils.stemWord(normalWord);
+
+                    return normalWord;
+                }
+        ).collect(Collectors.toCollection(LinkedList::new));
+
+        for (String normalWord : normalWords) {
+            Optional<Word> wordIdOptional = wordService.getWord(normalWord, WordService.QueryType.WORD);
             if (wordIdOptional.isPresent()) {
                 String wordId = wordIdOptional.get().getWordId();
                 Integer wordIndex = wordsMap.get(wordId);
 
                 if (wordIndex != null)
                     queryVector.set(wordIndex, queryVector.get(wordIndex) + 1.0);
+            }
+        }
+
+        List<String> phraseWords = NLPUtils.parsePhraseSearchQuery(query);
+
+        phraseWords = phraseWords.stream().map(
+                words -> {
+                    List<String> wordsList = NLPUtils.tokenize(words);
+                    wordsList = NLPUtils.removeStopWords(wordsList);
+                    wordsList = NLPUtils.stemWords(wordsList);
+
+                    return String.join(" ", wordsList);
+                }
+        ).collect(Collectors.toCollection(LinkedList::new));
+
+        for (String phrase : phraseWords) {
+            Optional<Word> wordIdOptional = wordService.getWord(phrase, WordService.QueryType.WORD);
+
+            if (wordIdOptional.isPresent()) {
+                String wordId = wordIdOptional.get().getWordId();
+                Integer wordIndex = wordsMap.get(wordId);
+
+                if (wordIndex != null) {
+                    queryVector.set(wordIndex, queryVector.get(wordIndex) + 10.0);
+                }
             }
         }
     }
@@ -96,7 +139,8 @@ public class SearchEngineService {
             List<Double> documentVector = documentsVector.get(i);
             double score = VSMUtils.getCosineSimilarity(documentVector, queryVector);
 
-            scoresVector.set(i, score);
+            if (!Double.isNaN(score))
+                scoresVector.set(i, score);
         }
     }
 
@@ -135,16 +179,17 @@ public class SearchEngineService {
 
     private void setUpDocumentsVector() {
         // TODO: fix the maxTF and df computation if needed
-        // TODO: Implement mechanism to favor matches in title
         int numDocs = documents.size();
+        double titleWeight = 10.0;
+
         for (Word word : words) {
             String wordId = word.getWordId();
             Integer wordIndex = wordsMap.get(wordId);
 
-            if (wordIndex == null) {
-                System.out.println("error!!!");
-                System.out.println("Word index is null" + word.getWord());
-            }
+//            if (wordIndex == null) {
+//                System.out.println("error!!!");
+//                System.out.println("Word index is null" + word.getWord());
+//            }
 
             TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
             BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
@@ -162,7 +207,7 @@ public class SearchEngineService {
                 int tf = positions.size();
 
                 double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
+                double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
                 documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
             }
 

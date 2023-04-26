@@ -47,7 +47,40 @@ public abstract class NLPUtils {
         return words.stream().filter(word -> !stopWords.contains(word.toLowerCase())).collect(Collectors.toCollection(LinkedList::new));
     }
 
+    public static String stemWord(String word) {
+        return porterStemmer.stemWord(word);
+    }
+
     public static List<String> stemWords(List<String> words) {
         return words.stream().map(porterStemmer::stemWord).collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    public static List<String> nGrams(List<String> words, int n) {
+        List<String> nGrams = new LinkedList<>();
+        for (int i = 0; i < words.size() - n + 1; i++)
+            nGrams.add(String.join(" ", words.subList(i, i + n)));
+
+        return nGrams;
+    }
+
+    public static List<String> parsePhraseSearchQuery(String query) {
+        List<Integer> quotationMarksIndices = new LinkedList<>();
+        for (int i = 0; i < query.length(); i++) {
+            if (query.charAt(i) == '"')
+                quotationMarksIndices.add(i);
+        }
+
+        if (quotationMarksIndices.size() % 2 != 0) {
+            logger.warn("Invalid phrase search query: " + query);
+        }
+
+        List<String> phrases = new LinkedList<>();
+        for (int i = 0; i + 1 < quotationMarksIndices.size(); i += 2) {
+            String phrase = query.substring(quotationMarksIndices.get(i) + 1, quotationMarksIndices.get(i + 1));
+            phrase = phrase.strip();
+            phrases.add(phrase);
+        }
+
+        return phrases;
     }
 }

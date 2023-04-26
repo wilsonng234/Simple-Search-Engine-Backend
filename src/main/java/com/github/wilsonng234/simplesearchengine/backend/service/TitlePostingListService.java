@@ -6,6 +6,11 @@ import com.github.wilsonng234.simplesearchengine.backend.model.TitlePostingList;
 import com.github.wilsonng234.simplesearchengine.backend.repository.TitlePostingListRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -17,6 +22,8 @@ import java.util.Optional;
 public class TitlePostingListService extends PostingListService {
     @Autowired
     private TitlePostingListRepository titlePostingListRepository;
+    @Autowired
+    private MongoTemplate mongoTemplate;
     @Autowired
     private PostingService postingService;
 
@@ -32,21 +39,16 @@ public class TitlePostingListService extends PostingListService {
 
     @Override
     public TitlePostingList putPositingList(String wordId, Posting posting) {
-        Optional<TitlePostingList> titlePostingListOptional = titlePostingListRepository.findTitlePostingListByWordId(wordId);
-        TitlePostingList titlePostingList = titlePostingListOptional.orElseGet(() -> createPostingList(wordId));
+        String postingId = posting.getPostingId();
+        if (postingId == null)
+            postingId = postingService.putPosting(posting).getPostingId();
 
-        List<String> postingIds = titlePostingList.getPostingIds();
-        List<String> filteredPostings = postingIds.stream().filter(p -> p.equals(posting.getPostingId())).toList();
+        Query query = new Query(Criteria.where("wordId").is(wordId));
+        Update update = new Update().addToSet("postingIds", postingId);
+        FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
+        Class<TitlePostingList> cls = TitlePostingList.class;
 
-        if (filteredPostings.size() == 0) {
-            postingIds.add(posting.getPostingId());
-        } else {
-            postingService.getPosting(filteredPostings.get(0)).get().setWordPositions(posting.getWordPositions());
-        }
-
-        titlePostingList.setPostingIds(postingIds);
-        titlePostingList.setMaxTF(Math.max(titlePostingList.getMaxTF(), posting.getWordPositions().size()));
-        return titlePostingListRepository.save(titlePostingList);
+        return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
     }
 
     @Override

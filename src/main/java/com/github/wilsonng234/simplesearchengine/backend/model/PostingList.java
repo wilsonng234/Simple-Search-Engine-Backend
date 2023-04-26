@@ -11,11 +11,11 @@ import java.util.List;
 public abstract class PostingList {
     @Id
     private String wordId;
-    private List<Posting> postings;
+    private List<String> postingIds;
     private int maxTF = 0;
 
-    public PostingList(String wordId, List<Posting> postings) {
+    public PostingList(String wordId, List<String> postingIds) {
         this.wordId = wordId;
-        this.postings = postings;
+        this.postingIds = postingIds;
     }
 }

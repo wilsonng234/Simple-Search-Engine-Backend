@@ -23,6 +23,8 @@ public class SearchEngineService {
     @Autowired
     private DocumentService documentService;
     @Autowired
+    private PostingService postingService;
+    @Autowired
     private TitlePostingListService titlePostingListService;
     @Autowired
     private BodyPostingListService bodyPostingListService;
@@ -194,11 +196,12 @@ public class SearchEngineService {
             TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
             BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
             int titleMaxTF = titlePostingList.getMaxTF();
-            int titleDocFreq = titlePostingList.getPostings().size();
+            int titleDocFreq = titlePostingList.getPostingIds().size();
             int bodyMaxTF = bodyPostingList.getMaxTF();
-            int bodyDocFreq = bodyPostingList.getPostings().size();
+            int bodyDocFreq = bodyPostingList.getPostingIds().size();
 
-            for (Posting posting : titlePostingList.getPostings()) {
+            for (String postingId : titlePostingList.getPostingIds()) {
+                Posting posting = postingService.getPosting(postingId).get();
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
 //                if (docIndex == null)
@@ -211,7 +214,8 @@ public class SearchEngineService {
                 documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
             }
 
-            for (Posting posting : bodyPostingList.getPostings()) {
+            for (String postingId : bodyPostingList.getPostingIds()) {
+                Posting posting = postingService.getPosting(postingId).get();
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
 //                if (docIndex == null)

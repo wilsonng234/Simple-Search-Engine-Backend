@@ -17,6 +17,8 @@ import java.util.Optional;
 public class TitlePostingListService extends PostingListService {
     @Autowired
     private TitlePostingListRepository titlePostingListRepository;
+    @Autowired
+    private PostingService postingService;
 
     @Override
     public List<? extends PostingList> allPostingLists() {
@@ -33,16 +35,16 @@ public class TitlePostingListService extends PostingListService {
         Optional<TitlePostingList> titlePostingListOptional = titlePostingListRepository.findTitlePostingListByWordId(wordId);
         TitlePostingList titlePostingList = titlePostingListOptional.orElseGet(() -> createPostingList(wordId));
 
-        List<Posting> postings = titlePostingList.getPostings();
-        List<Posting> filteredPostings = postings.stream().filter(p -> p.equals(posting)).toList();
+        List<String> postingIds = titlePostingList.getPostingIds();
+        List<String> filteredPostings = postingIds.stream().filter(p -> p.equals(posting.getPostingId())).toList();
 
         if (filteredPostings.size() == 0) {
-            postings.add(posting);
+            postingIds.add(posting.getPostingId());
         } else {
-            filteredPostings.get(0).setWordPositions(posting.getWordPositions());
+            postingService.getPosting(filteredPostings.get(0)).get().setWordPositions(posting.getWordPositions());
         }
 
-        titlePostingList.setPostings(postings);
+        titlePostingList.setPostingIds(postingIds);
         titlePostingList.setMaxTF(Math.max(titlePostingList.getMaxTF(), posting.getWordPositions().size()));
         return titlePostingListRepository.save(titlePostingList);
     }

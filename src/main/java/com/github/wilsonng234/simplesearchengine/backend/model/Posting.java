@@ -24,7 +24,7 @@ public class Posting {
 
         Posting posting = (Posting) o;
 
-        return docId.equals(posting.docId);
+        return postingId.equals(posting.postingId);
     }
 
 }

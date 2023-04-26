@@ -36,7 +36,7 @@
 
 - [X] Implement term weighting formula based on `tf*idf/max(tf)`
 - [X] Implement Document Similarity based on cosine similarity measure
-- [ ] Implement mechanism to favor matches in title
+- [X] Implement mechanism to favor matches in title
 - [X] Create api endpoint `api/v1/searchEngine`
     - [X] Return top-50 query results
 - [X] Implement phrase search

@@ -142,6 +142,12 @@ public class SearchEngineService {
             if (!Double.isNaN(score))
                 scoresVector.set(i, score);
         }
+
+        System.out.println("documents: " + documentsVector);
+        System.out.println("query: " + queryVector);
+        System.out.println("scores: " + scoresVector);
+
+        System.out.println(wordsMap.get("6447fd3c72148e228cd90c4f"));
     }
 
     private void setUp() {
@@ -179,16 +185,17 @@ public class SearchEngineService {
 
     private void setUpDocumentsVector() {
         // TODO: fix the maxTF and df computation if needed
-        // TODO: Implement mechanism to favor matches in title
         int numDocs = documents.size();
+        double titleWeight = 10.0;
+
         for (Word word : words) {
             String wordId = word.getWordId();
             Integer wordIndex = wordsMap.get(wordId);
 
-            if (wordIndex == null) {
-                System.out.println("error!!!");
-                System.out.println("Word index is null" + word.getWord());
-            }
+//            if (wordIndex == null) {
+//                System.out.println("error!!!");
+//                System.out.println("Word index is null" + word.getWord());
+//            }
 
             TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
             BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
@@ -206,7 +213,7 @@ public class SearchEngineService {
                 int tf = positions.size();
 
                 double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
+                double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
                 documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
             }
 

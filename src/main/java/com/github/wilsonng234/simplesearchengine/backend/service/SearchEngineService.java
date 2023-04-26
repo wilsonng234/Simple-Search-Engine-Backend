@@ -142,12 +142,6 @@ public class SearchEngineService {
             if (!Double.isNaN(score))
                 scoresVector.set(i, score);
         }
-
-        System.out.println("documents: " + documentsVector);
-        System.out.println("query: " + queryVector);
-        System.out.println("scores: " + scoresVector);
-
-        System.out.println(wordsMap.get("6447fd3c72148e228cd90c4f"));
     }
 
     private void setUp() {

@@ -27,10 +27,9 @@ import java.util.*;
 @Scope("prototype")
 public class CrawlerService {
     private static final Logger logger = LogManager.getLogger(CrawlerService.class);
-    public static SimpleDateFormat simpleDateFormat;
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
-    static {
-        simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    {
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 

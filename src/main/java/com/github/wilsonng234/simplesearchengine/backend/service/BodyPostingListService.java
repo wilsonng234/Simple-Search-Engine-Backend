@@ -45,7 +45,7 @@ public class BodyPostingListService extends PostingListService {
             postingId = postingService.putPosting(posting).getPostingId();
 
         Query query = new Query(Criteria.where("wordId").is(wordId));
-        Update update = new Update().addToSet("postingIds", postingId);
+        Update update = new Update().addToSet("postingIds", postingId).max("maxTF", posting.getWordPositions().size());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<BodyPostingList> cls = BodyPostingList.class;
 

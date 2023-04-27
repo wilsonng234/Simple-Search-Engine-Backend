@@ -2,11 +2,13 @@ package com.github.wilsonng234.simplesearchengine.backend.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public abstract class PostingList {
     @Id

@@ -348,6 +348,7 @@ public class CrawlerService {
                     return wordService.putWord(word);
                 }).getWordId();
 
+                // TODO: put all postings with the same wordId at once
                 Posting posting = postingService.putPosting(wordId, docId, positions);
                 bodyPostingListService.putPositingList(wordId, posting);
             }

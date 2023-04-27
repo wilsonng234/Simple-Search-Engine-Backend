@@ -56,6 +56,7 @@ public class SearchEngineService {
     }
 
     public List<QueryResult> search(String query) {
+        long start = System.currentTimeMillis();
         setUp();
         setUpQueryVector(query);
         setUpScoresVector();
@@ -81,11 +82,11 @@ public class SearchEngineService {
         }
         queryResults.sort(Comparator.comparingDouble(QueryResult::getScore).reversed());
 
+        System.out.println("Search time: " + (System.currentTimeMillis() - start) + "ms");
         return queryResults;
     }
 
     private void setUpQueryVector(String query) {
-        // TODO: Fix the query vector computation if needed
         List<String> normalWords = NLPUtils.tokenize(query);
         normalWords = NLPUtils.removeStopWords(normalWords);
         normalWords = normalWords.stream().map(
@@ -190,10 +191,11 @@ public class SearchEngineService {
     }
 
     private void setUpDocumentsVector() {
-        // TODO: fix the maxTF and df computation if needed
+        long start = System.currentTimeMillis();
         int numDocs = documents.size();
         double titleWeight = 10.0;
 
+        long sumOfTimeForTermWeight = 0;
         for (Word word : words) {
             String wordId = word.getWordId();
             Integer wordIndex = wordsMap.get(wordId);
@@ -227,9 +229,11 @@ public class SearchEngineService {
                 List<Long> positions = posting.getWordPositions();
                 int tf = positions.size();
 
+                long temp = System.currentTimeMillis();
                 double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
                 double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
                 documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
+                sumOfTimeForTermWeight += System.currentTimeMillis() - temp;
             }
 
             for (String postingId : bodyPostingList.getPostingIds()) {
@@ -249,10 +253,15 @@ public class SearchEngineService {
                 List<Long> positions = posting.getWordPositions();
                 int tf = positions.size();
 
+                long temp = System.currentTimeMillis();
                 double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
                 double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, bodyDocFreq, bodyMaxTF);
                 documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
+                sumOfTimeForTermWeight += System.currentTimeMillis() - temp;
             }
         }
+
+        System.out.println("Time to compute term weight: " + sumOfTimeForTermWeight + "ms");
+        System.out.println("Time to build documents vector: " + (System.currentTimeMillis() - start) + "ms");
     }
 }

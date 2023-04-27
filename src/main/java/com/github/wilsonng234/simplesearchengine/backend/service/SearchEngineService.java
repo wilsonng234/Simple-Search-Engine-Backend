@@ -205,7 +205,12 @@ public class SearchEngineService {
             int bodyDocFreq = bodyPostingList.getPostingIds().size();
 
             for (String postingId : titlePostingList.getPostingIds()) {
-                Posting posting = postingService.getPosting(postingId).get();
+                Optional<Posting> postingOptional = postingService.getPosting(postingId);
+                if (postingOptional.isEmpty()) {
+                    logger.error("Posting is empty" + postingId);
+                    continue;
+                }
+                Posting posting = postingOptional.get();
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
                 if (docIndex == null) {
@@ -222,7 +227,12 @@ public class SearchEngineService {
             }
 
             for (String postingId : bodyPostingList.getPostingIds()) {
-                Posting posting = postingService.getPosting(postingId).get();
+                Optional<Posting> postingOptional = postingService.getPosting(postingId);
+                if (postingOptional.isEmpty()) {
+                    logger.error("Posting is empty" + postingId);
+                    continue;
+                }
+                Posting posting = postingOptional.get();
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
                 if (docIndex == null) {

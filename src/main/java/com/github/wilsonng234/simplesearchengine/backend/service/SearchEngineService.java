@@ -68,7 +68,7 @@ public class SearchEngineService {
         int i = 0;
         List<QueryResult> queryResults = new ArrayList<>(topKDocuments.size());
         for (Document document : topKDocuments) {
-            QueryResult queryResult = new QueryResult(scoresVector.get(i), document.getDocId(),
+            QueryResult queryResult = new QueryResult(scoresVector.get(documentsMap.get(document.getDocId())), document.getDocId(),
                     document.getUrl(), document.getSize(), document.getTitle(), document.getLastModificationDate(),
                     document.getTitleWordFreqs(), document.getBodyWordFreqs(), document.getChildrenUrls());
 

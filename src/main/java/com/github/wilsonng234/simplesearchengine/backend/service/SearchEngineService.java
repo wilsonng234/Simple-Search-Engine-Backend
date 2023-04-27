@@ -174,10 +174,12 @@ public class SearchEngineService {
 
         documentsVector = new ArrayList<>(documents.size());
         for (i = 0; i < documents.size(); i++) {
-            documentsVector.add(new ArrayList<>(words.size()));
+            List<Double> documentVector = new ArrayList<>(words.size());
             for (int j = 0; j < words.size(); j++) {
-                documentsVector.get(i).add(0.0);
+                documentVector.add(0.0);
             }
+
+            documentsVector.add(documentVector);
         }
 
         setUpDocumentsVector();

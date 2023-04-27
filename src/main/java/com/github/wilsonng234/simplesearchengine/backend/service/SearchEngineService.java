@@ -61,19 +61,23 @@ public class SearchEngineService {
         setUpScoresVector();
 
         List<Integer> topKIndices = SearchEngineUtils.getTopKIndices(scoresVector, 50);
-        List<Document> topKDocuments = topKIndices.stream()
-                .map(index -> documents.get(index))
-                .collect(Collectors.toCollection(ArrayList::new));
 
-        int i = 0;
-        List<QueryResult> queryResults = new ArrayList<>(topKDocuments.size());
-        for (Document document : topKDocuments) {
-            QueryResult queryResult = new QueryResult(scoresVector.get(documentsMap.get(document.getDocId())), document.getDocId(),
-                    document.getUrl(), document.getSize(), document.getTitle(), document.getLastModificationDate(),
-                    document.getTitleWordFreqs(), document.getBodyWordFreqs(), document.getChildrenUrls());
+        List<QueryResult> queryResults = new ArrayList<>(topKIndices.size());
+        for (Integer index : topKIndices) {
+            Document document = documents.get(index);
+            QueryResult queryResult = new QueryResult(
+                    scoresVector.get(index),
+                    document.getDocId(),
+                    document.getUrl(),
+                    document.getSize(),
+                    document.getTitle(),
+                    document.getLastModificationDate(),
+                    document.getTitleWordFreqs(),
+                    document.getBodyWordFreqs(),
+                    document.getChildrenUrls()
+            );
 
             queryResults.add(queryResult);
-            i++;
         }
         queryResults.sort(Comparator.comparingDouble(QueryResult::getScore).reversed());
 

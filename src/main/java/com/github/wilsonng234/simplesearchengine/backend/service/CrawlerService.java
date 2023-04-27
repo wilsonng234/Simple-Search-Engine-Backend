@@ -80,12 +80,22 @@ public class CrawlerService {
 
         private long getLastModificationDate() throws ParseException {
             String lastModificationDate = response.header("Last-Modified");
-            if (lastModificationDate != null)
-                return simpleDateFormat.parse(lastModificationDate).getTime();
+            if (lastModificationDate != null) {
+                try {
+                    return simpleDateFormat.parse(lastModificationDate).getTime();
+                } catch (NumberFormatException numberFormatException) {
+                    logger.error("lastModificationDate " + lastModificationDate + " " + url);
+                }
+            }
 
             String date = response.header("Date");
-            if (date != null)
-                return simpleDateFormat.parse(date).getTime();
+            if (date != null) {
+                try {
+                    return simpleDateFormat.parse(date).getTime();
+                } catch (NumberFormatException numberFormatException) {
+                    logger.error("date " + date + " " + url);
+                }
+            }
 
             return new Date().getTime();
         }

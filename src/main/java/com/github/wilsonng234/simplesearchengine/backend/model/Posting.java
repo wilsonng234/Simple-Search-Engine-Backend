@@ -2,12 +2,20 @@ package com.github.wilsonng234.simplesearchengine.backend.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
 @Data
 @AllArgsConstructor
+@Document(collection = "posting")
+@CompoundIndex(def = "{'wordId': 1, 'docId': 1}", unique = true)
 public class Posting {
+    @Id
+    private String postingId;
+    private String wordId;
     private String docId;
     private List<Long> wordPositions;
 
@@ -18,7 +26,7 @@ public class Posting {
 
         Posting posting = (Posting) o;
 
-        return docId.equals(posting.docId);
+        return postingId.equals(posting.postingId);
     }
 
 }

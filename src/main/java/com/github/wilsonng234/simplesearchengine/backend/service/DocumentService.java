@@ -2,8 +2,14 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.repository.DocumentRepository;
+import com.mongodb.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +25,8 @@ public class DocumentService {
 
     @Autowired
     private DocumentRepository documentRepository;
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     /**
      * @param key  -  url or docId
@@ -37,19 +45,24 @@ public class DocumentService {
         return documentRepository.findAll();
     }
 
-    public Document createDocument(Document document) {
-        return documentRepository.insert(document);
-    }
-
-    /**
-     * @param document - document to be put (must have url)
-     * @return - document that was put
-     **/
     public Document putDocument(Document document) {
-        String url = document.getUrl();
-        Document doc = documentRepository.findDocumentByUrl(url).orElseGet(() -> createDocument(document));
+        Query query = new Query(Criteria.where("url").is(document.getUrl()));
+        Update update = new Update().set("url", document.getUrl())
+                .set("size", document.getSize())
+                .set("title", document.getTitle())
+                .set("lastModificationDate", document.getLastModificationDate())
+                .set("titleWordFreqs", document.getTitleWordFreqs())
+                .set("bodyWordFreqs", document.getBodyWordFreqs())
+                .set("childrenUrls", document.getChildrenUrls());
+        FindAndModifyOptions findAndModifyOptions = org.springframework.data.mongodb.core.FindAndModifyOptions.options().upsert(true).returnNew(true);
+        Class<Document> cls = Document.class;
 
-        document.setDocId(doc.getDocId());
-        return documentRepository.save(document);
+        try {
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        } catch (DuplicateKeyException duplicateKeyException) {
+            // update again if duplicate key exception
+            System.out.println(duplicateKeyException.getMessage());
+            return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
+        }
     }
 }

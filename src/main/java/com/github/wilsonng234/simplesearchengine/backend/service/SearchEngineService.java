@@ -7,6 +7,8 @@ import com.github.wilsonng234.simplesearchengine.backend.util.VSMUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.util.Pair;
@@ -18,10 +20,14 @@ import java.util.stream.Collectors;
 @Service
 @Scope("prototype")
 public class SearchEngineService {
+    private static final Logger logger = LogManager.getLogger(SearchEngineService.class);
+
     @Autowired
     private WordService wordService;
     @Autowired
     private DocumentService documentService;
+    @Autowired
+    private PostingService postingService;
     @Autowired
     private TitlePostingListService titlePostingListService;
     @Autowired
@@ -186,23 +192,32 @@ public class SearchEngineService {
             String wordId = word.getWordId();
             Integer wordIndex = wordsMap.get(wordId);
 
-//            if (wordIndex == null) {
-//                System.out.println("error!!!");
-//                System.out.println("Word index is null" + word.getWord());
-//            }
+            if (wordIndex == null) {
+                logger.error("Word index is null" + word.getWord());
+                continue;
+            }
 
             TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
             BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
             int titleMaxTF = titlePostingList.getMaxTF();
-            int titleDocFreq = titlePostingList.getPostings().size();
+            int titleDocFreq = titlePostingList.getPostingIds().size();
             int bodyMaxTF = bodyPostingList.getMaxTF();
-            int bodyDocFreq = bodyPostingList.getPostings().size();
+            int bodyDocFreq = bodyPostingList.getPostingIds().size();
 
-            for (Posting posting : titlePostingList.getPostings()) {
+            for (String postingId : titlePostingList.getPostingIds()) {
+                Optional<Posting> postingOptional = postingService.getPosting(postingId);
+                if (postingOptional.isEmpty()) {
+                    logger.error("Posting is empty" + postingId);
+                    continue;
+                }
+                Posting posting = postingOptional.get();
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
-//                if (docIndex == null)
-//                    continue;
+                if (docIndex == null) {
+                    logger.error("Doc index is null" + docId);
+                    continue;
+                }
+
                 List<Long> positions = posting.getWordPositions();
                 int tf = positions.size();
 
@@ -211,11 +226,20 @@ public class SearchEngineService {
                 documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
             }
 
-            for (Posting posting : bodyPostingList.getPostings()) {
+            for (String postingId : bodyPostingList.getPostingIds()) {
+                Optional<Posting> postingOptional = postingService.getPosting(postingId);
+                if (postingOptional.isEmpty()) {
+                    logger.error("Posting is empty" + postingId);
+                    continue;
+                }
+                Posting posting = postingOptional.get();
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
-//                if (docIndex == null)
-//                    continue;
+                if (docIndex == null) {
+                    logger.error("Doc index is null" + docId);
+                    continue;
+                }
+
                 List<Long> positions = posting.getWordPositions();
                 int tf = positions.size();
 

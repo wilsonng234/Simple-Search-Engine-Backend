@@ -39,6 +39,8 @@ public class CrawlerService {
     @Autowired
     private DocumentService documentService;
     @Autowired
+    private PostingService postingService;
+    @Autowired
     private TitlePostingListService titlePostingListService;
     @Autowired
     private BodyPostingListService bodyPostingListService;
@@ -78,12 +80,22 @@ public class CrawlerService {
 
         private long getLastModificationDate() throws ParseException {
             String lastModificationDate = response.header("Last-Modified");
-            if (lastModificationDate != null)
-                return simpleDateFormat.parse(lastModificationDate).getTime();
+            if (lastModificationDate != null) {
+                try {
+                    return simpleDateFormat.parse(lastModificationDate).getTime();
+                } catch (NumberFormatException numberFormatException) {
+                    logger.error("lastModificationDate " + lastModificationDate + " " + url);
+                }
+            }
 
             String date = response.header("Date");
-            if (date != null)
-                return simpleDateFormat.parse(date).getTime();
+            if (date != null) {
+                try {
+                    return simpleDateFormat.parse(date).getTime();
+                } catch (NumberFormatException numberFormatException) {
+                    logger.error("date " + date + " " + url);
+                }
+            }
 
             return new Date().getTime();
         }
@@ -110,6 +122,8 @@ public class CrawlerService {
             Elements linksElements = document.select("a[href]");
             for (Element linkElement : linksElements) {
                 String childLink = linkElement.attr("abs:href");
+                if (!childLink.startsWith("http") || childLink.endsWith(".pdf"))
+                    continue;
                 try {
                     new URL(childLink).toURI();
                 } catch (MalformedURLException | URISyntaxException e) {
@@ -277,7 +291,7 @@ public class CrawlerService {
             for (Map.Entry<String, List<Long>> entry : titleWordPositions.entrySet()) {
                 String titleWord = entry.getKey();
                 wordService.getWord(titleWord, WordService.QueryType.WORD)
-                        .orElseGet(() -> wordService.createWord(titleWord));
+                        .orElseGet(() -> wordService.putWord(titleWord));
                 List<Long> positions = entry.getValue();
                 int freq = positions.size();
 
@@ -291,7 +305,7 @@ public class CrawlerService {
             for (Map.Entry<String, List<Long>> entry : bodyWordPositions.entrySet()) {
                 String bodyWord = entry.getKey();
                 wordService.getWord(bodyWord, WordService.QueryType.WORD)
-                        .orElseGet(() -> wordService.createWord(bodyWord));
+                        .orElseGet(() -> wordService.putWord(bodyWord));
                 List<Long> positions = entry.getValue();
                 int freq = positions.size();
 
@@ -303,11 +317,8 @@ public class CrawlerService {
             Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordFreqs, bodyWordFreqs, childrenLinks);
 
             // update the forward index
-            if (indexedDocument) {
-                document = documentService.putDocument(document);
-            } else {
-                document = documentService.createDocument(document);
-            }
+            document = documentService.putDocument(document);
+
             if (document == null) {
                 // fail documentRepository.save(document);
                 logger.warn("Fail to save document: " + crawler.getUrl());
@@ -321,10 +332,10 @@ public class CrawlerService {
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
                     // this is for double assurance
                     logger.warn("Word not found: " + word);
-                    return wordService.createWord(word);
+                    return wordService.putWord(word);
                 }).getWordId();
 
-                Posting posting = new Posting(docId, positions);
+                Posting posting = postingService.putPosting(wordId, docId, positions);
                 titlePostingListService.putPositingList(wordId, posting);
             }
 
@@ -334,10 +345,10 @@ public class CrawlerService {
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
                     // this is for double assurance
                     logger.warn("Word not found: " + word);
-                    return wordService.createWord(word);
+                    return wordService.putWord(word);
                 }).getWordId();
 
-                Posting posting = new Posting(docId, positions);
+                Posting posting = postingService.putPosting(wordId, docId, positions);
                 bodyPostingListService.putPositingList(wordId, posting);
             }
 

@@ -37,8 +37,8 @@ public class WordController {
         return new ResponseEntity<>(wordService.allWords(), HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<Word> createWord(@RequestBody Word word) {
-        return new ResponseEntity<>(wordService.createWord(word.getWord()), HttpStatus.CREATED);
+    @PutMapping
+    public ResponseEntity<Word> putWord(@RequestBody Word word) {
+        return new ResponseEntity<>(wordService.putWord(word.getWord()), HttpStatus.CREATED);
     }
 }

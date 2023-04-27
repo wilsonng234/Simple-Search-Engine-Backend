@@ -2,6 +2,8 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
 import com.mongodb.DuplicateKeyException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -17,6 +19,7 @@ import java.util.Optional;
 @Service
 @Scope("prototype")
 public class PostingService {
+    private static final Logger logger = LogManager.getLogger(PostingService.class);
     @Autowired
     private MongoTemplate mongoTemplate;
 
@@ -51,7 +54,7 @@ public class PostingService {
             return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
         } catch (DuplicateKeyException duplicateKeyException) {
             // update again if duplicate key exception
-            System.out.println("duplicateKeyException");
+            logger.warn("duplicateKeyException");
             return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
         }
     }

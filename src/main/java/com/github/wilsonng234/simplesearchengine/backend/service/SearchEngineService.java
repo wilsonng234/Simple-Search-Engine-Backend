@@ -196,6 +196,7 @@ public class SearchEngineService {
         double titleWeight = 10.0;
 
         long sumOfTimeForTermWeight = 0;
+        long sumOfTimeForPostingList = 0;
         for (Word word : words) {
             String wordId = word.getWordId();
             Integer wordIndex = wordsMap.get(wordId);
@@ -205,20 +206,16 @@ public class SearchEngineService {
                 continue;
             }
 
+            long temp1 = System.currentTimeMillis();
             TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
             BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
             int titleMaxTF = titlePostingList.getMaxTF();
-            int titleDocFreq = titlePostingList.getPostingIds().size();
+            int titleDocFreq = titlePostingList.getPostings().size();
             int bodyMaxTF = bodyPostingList.getMaxTF();
-            int bodyDocFreq = bodyPostingList.getPostingIds().size();
+            int bodyDocFreq = bodyPostingList.getPostings().size();
+            sumOfTimeForPostingList += System.currentTimeMillis() - temp1;
 
-            for (String postingId : titlePostingList.getPostingIds()) {
-                Optional<Posting> postingOptional = postingService.getPosting(postingId);
-                if (postingOptional.isEmpty()) {
-                    logger.error("Posting is empty" + postingId);
-                    continue;
-                }
-                Posting posting = postingOptional.get();
+            for (Posting posting : titlePostingList.getPostings()) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
                 if (docIndex == null) {
@@ -236,13 +233,7 @@ public class SearchEngineService {
                 sumOfTimeForTermWeight += System.currentTimeMillis() - temp;
             }
 
-            for (String postingId : bodyPostingList.getPostingIds()) {
-                Optional<Posting> postingOptional = postingService.getPosting(postingId);
-                if (postingOptional.isEmpty()) {
-                    logger.error("Posting is empty" + postingId);
-                    continue;
-                }
-                Posting posting = postingOptional.get();
+            for (Posting posting : bodyPostingList.getPostings()) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
                 if (docIndex == null) {
@@ -262,6 +253,7 @@ public class SearchEngineService {
         }
 
         System.out.println("Time to compute term weight: " + sumOfTimeForTermWeight + "ms");
+        System.out.println("Time to get posting list: " + sumOfTimeForPostingList + "ms");
         System.out.println("Time to build documents vector: " + (System.currentTimeMillis() - start) + "ms");
     }
 }

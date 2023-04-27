@@ -48,7 +48,7 @@ public class TitlePostingListService extends PostingListService {
             postingId = postingService.putPosting(posting).getPostingId();
 
         Query query = new Query(Criteria.where("wordId").is(wordId));
-        Update update = new Update().addToSet("postingIds", postingId).max("maxTF", posting.getWordPositions().size());
+        Update update = new Update().addToSet("postings", posting).max("maxTF", posting.getWordPositions().size());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<TitlePostingList> cls = TitlePostingList.class;
 

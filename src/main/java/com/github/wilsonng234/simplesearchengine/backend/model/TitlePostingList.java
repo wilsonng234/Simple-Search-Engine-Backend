@@ -6,7 +6,7 @@ import java.util.List;
 
 @Document(collection = "titlePostingLists")
 public class TitlePostingList extends PostingList {
-    public TitlePostingList(String wordId, List<String> postingIds) {
-        super(wordId, postingIds);
+    public TitlePostingList(String wordId, List<Posting> postings) {
+        super(wordId, postings);
     }
 }

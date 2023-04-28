@@ -337,8 +337,8 @@ public class CrawlerService {
             }
 
             // set up bodyWordFreqs
-            List<Pair<String, Integer>> bodyWordFreqs = crawler.getTitleWordFreqs();
-            for (Pair<String, Integer> wordFreq : titleWordFreqs) {
+            List<Pair<String, Integer>> bodyWordFreqs = crawler.getBodyWordFreqs();
+            for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
                 String word = wordFreq.getFirst();
                 wordService.getWord(word, WordService.QueryType.WORD)
                         .orElseGet(() -> wordService.putWord(word));

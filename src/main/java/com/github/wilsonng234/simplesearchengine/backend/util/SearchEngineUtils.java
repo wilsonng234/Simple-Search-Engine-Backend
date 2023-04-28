@@ -1,11 +1,16 @@
 package com.github.wilsonng234.simplesearchengine.backend.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.*;
 
 public class SearchEngineUtils {
+    private static final Logger logger = LogManager.getLogger(SearchEngineUtils.class);
+
     public static List<Integer> getTopKIndices(List<Double> scores, int k) {
         if (scores.size() < 1) {
-            System.out.println("Scores size is 0");
+            logger.info("Scores size is 0");
             return new LinkedList<>();
         }
 

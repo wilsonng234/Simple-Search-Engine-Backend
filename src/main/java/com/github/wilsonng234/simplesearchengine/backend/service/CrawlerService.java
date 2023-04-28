@@ -130,7 +130,8 @@ public class CrawlerService {
             for (String word : words) {
                 if (!wordFreqsMap.containsKey(word))
                     wordFreqsMap.put(word, 1);
-                wordFreqsMap.put(word, wordFreqsMap.get(word) + 1);
+                else
+                    wordFreqsMap.put(word, wordFreqsMap.get(word) + 1);
             }
 
             List<Pair<String, Integer>> wordFreqsPairs = new ArrayList<>(wordFreqsMap.size());
@@ -152,7 +153,8 @@ public class CrawlerService {
             for (String word : words) {
                 if (!wordFreqsMap.containsKey(word))
                     wordFreqsMap.put(word, 1);
-                wordFreqsMap.put(word, wordFreqsMap.get(word) + 1);
+                else
+                    wordFreqsMap.put(word, wordFreqsMap.get(word) + 1);
             }
 
             List<Pair<String, Integer>> wordFreqsPairs = new ArrayList<>(wordFreqsMap.size());

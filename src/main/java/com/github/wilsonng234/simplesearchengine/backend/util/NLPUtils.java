@@ -128,6 +128,20 @@ public abstract class NLPUtils {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
+    public static List<Pair<String, String>> stemWordPosPairs(List<Pair<String, String>> wordPosPairs) {
+        List<Pair<String, String>> result = new LinkedList<>();
+
+        for (Pair<String, String> wordPosPair : wordPosPairs) {
+            String word = wordPosPair.getFirst();
+            String pos = wordPosPair.getSecond();
+            String stemmedWord = porterStemmer.stemWord(word);
+
+            result.add(Pair.of(stemmedWord, pos));
+        }
+
+        return result;
+    }
+
     public static List<String> nGrams(List<String> words, int n) {
         List<String> nGrams = new LinkedList<>();
         if (words.size() == 0)

@@ -273,9 +273,12 @@ public class SearchEngineService {
 
         int numThreads = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-        List<List<Word>> wordsChunks = Lists.partition(words, numThreads);
+        
+        int chunkSize = (int) Math.ceil((double) words.size() / numThreads);
+        List<List<Word>> wordsChunks = Lists.partition(words, chunkSize);
         for (List<Word> chunk : wordsChunks)
             executorService.submit(new UpdateTermWeightsByWords(chunk));
+
         executorService.shutdown();     // stop accepting new tasks
         try {
             if (!executorService.awaitTermination(60, TimeUnit.MINUTES)) {

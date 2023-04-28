@@ -26,8 +26,6 @@ public class BodyPostingListService extends PostingListService {
     @Autowired
     private BodyPostingListRepository bodyPostingListRepository;
     @Autowired
-    private PostingService postingService;
-    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Override
@@ -42,12 +40,8 @@ public class BodyPostingListService extends PostingListService {
 
     @Override
     public BodyPostingList putPositingList(String wordId, Posting posting) {
-        String postingId = posting.getPostingId();
-        if (postingId == null)
-            postingId = postingService.putPosting(posting).getPostingId();
-
         Query query = new Query(Criteria.where("wordId").is(wordId));
-        Update update = new Update().max("maxTF", posting.getWordPositions().size());
+        Update update = new Update().max("maxTF", posting.getTf());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<BodyPostingList> cls = BodyPostingList.class;
 

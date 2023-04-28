@@ -237,8 +237,7 @@ public class SearchEngineService {
                     continue;
                 }
 
-                List<Long> positions = posting.getWordPositions();
-                int tf = positions.size();
+                int tf = posting.getTf();
 
                 long temp = System.currentTimeMillis();
                 double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
@@ -255,8 +254,7 @@ public class SearchEngineService {
                     continue;
                 }
 
-                List<Long> positions = posting.getWordPositions();
-                int tf = positions.size();
+                int tf = posting.getTf();
 
                 long temp = System.currentTimeMillis();
                 double originTermWeight = documentsVector.get(docIndex).get(wordIndex);

@@ -115,6 +115,50 @@ public class CrawlerService {
             return words;
         }
 
+        private List<Pair<String, Integer>> getTitleWordFreqs() {
+            List<String> words = getTitleWords();
+
+            Map<String, Integer> wordFreqsMap = new HashMap<>();
+            for (String word : words) {
+                if (!wordFreqsMap.containsKey(word))
+                    wordFreqsMap.put(word, 1);
+                wordFreqsMap.put(word, wordFreqsMap.get(word) + 1);
+            }
+
+            List<Pair<String, Integer>> wordFreqsPairs = new ArrayList<>(wordFreqsMap.size());
+            for (Map.Entry<String, Integer> entry : wordFreqsMap.entrySet()) {
+                String word = entry.getKey();
+                Integer freq = entry.getValue();
+
+                wordFreqsPairs.add(Pair.of(word, freq));
+            }
+
+            wordFreqsPairs = CrawlerUtils.sortWordFreqs(wordFreqsPairs);
+            return wordFreqsPairs;
+        }
+
+        private List<Pair<String, Integer>> getBodyWordFreqs() {
+            List<String> words = getBodyWords();
+
+            Map<String, Integer> wordFreqsMap = new HashMap<>();
+            for (String word : words) {
+                if (!wordFreqsMap.containsKey(word))
+                    wordFreqsMap.put(word, 1);
+                wordFreqsMap.put(word, wordFreqsMap.get(word) + 1);
+            }
+
+            List<Pair<String, Integer>> wordFreqsPairs = new ArrayList<>(wordFreqsMap.size());
+            for (Map.Entry<String, Integer> entry : wordFreqsMap.entrySet()) {
+                String word = entry.getKey();
+                Integer freq = entry.getValue();
+
+                wordFreqsPairs.add(Pair.of(word, freq));
+            }
+
+            wordFreqsPairs = CrawlerUtils.sortWordFreqs(wordFreqsPairs);
+            return wordFreqsPairs;
+        }
+
         private Set<String> getChildrenLinks() {
             Set<String> childrenLinks = new HashSet<>();
 
@@ -285,32 +329,20 @@ public class CrawlerService {
             String title = crawler.getTitle();
 
             // set up titleWordFreqs
-            Map<String, List<Long>> titleWordPositions = crawler.getTitleWordPositions();
-            List<Pair<String, Integer>> titleWordFreqs = new ArrayList<>(titleWordPositions.size());
-            for (Map.Entry<String, List<Long>> entry : titleWordPositions.entrySet()) {
-                String titleWord = entry.getKey();
-                wordService.getWord(titleWord, WordService.QueryType.WORD)
-                        .orElseGet(() -> wordService.putWord(titleWord));
-                List<Long> positions = entry.getValue();
-                int freq = positions.size();
-
-                titleWordFreqs.add(Pair.of(titleWord, freq));
+            List<Pair<String, Integer>> titleWordFreqs = crawler.getTitleWordFreqs();
+            for (Pair<String, Integer> wordFreq : titleWordFreqs) {
+                String word = wordFreq.getFirst();
+                wordService.getWord(word, WordService.QueryType.WORD)
+                        .orElseGet(() -> wordService.putWord(word));
             }
-            titleWordFreqs = CrawlerUtils.sortWordFreqs(titleWordFreqs);
 
             // set up bodyWordFreqs
-            Map<String, List<Long>> bodyWordPositions = crawler.getBodyWordPositions();
-            List<Pair<String, Integer>> bodyWordFreqs = new ArrayList<>(bodyWordPositions.size());
-            for (Map.Entry<String, List<Long>> entry : bodyWordPositions.entrySet()) {
-                String bodyWord = entry.getKey();
-                wordService.getWord(bodyWord, WordService.QueryType.WORD)
-                        .orElseGet(() -> wordService.putWord(bodyWord));
-                List<Long> positions = entry.getValue();
-                int freq = positions.size();
-
-                bodyWordFreqs.add(Pair.of(bodyWord, freq));
+            List<Pair<String, Integer>> bodyWordFreqs = crawler.getTitleWordFreqs();
+            for (Pair<String, Integer> wordFreq : titleWordFreqs) {
+                String word = wordFreq.getFirst();
+                wordService.getWord(word, WordService.QueryType.WORD)
+                        .orElseGet(() -> wordService.putWord(word));
             }
-            bodyWordFreqs = CrawlerUtils.sortWordFreqs(bodyWordFreqs);
 
             Set<String> childrenLinks = crawler.getChildrenLinks();
             Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordFreqs, bodyWordFreqs, childrenLinks);
@@ -325,30 +357,29 @@ public class CrawlerService {
             }
 
             String docId = document.getDocId();
-            for (Map.Entry<String, List<Long>> wordPositions : titleWordPositions.entrySet()) {
-                String word = wordPositions.getKey();
-                List<Long> positions = wordPositions.getValue();
+            for (Pair<String, Integer> wordFreq : titleWordFreqs) {
+                String word = wordFreq.getFirst();
+                Integer tf = wordFreq.getSecond();
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
                     // this is for double assurance
                     logger.warn("Word not found: " + word);
                     return wordService.putWord(word);
                 }).getWordId();
 
-                Posting posting = postingService.putPosting(wordId, "title", docId, positions);
+                Posting posting = postingService.putPosting(wordId, "title", docId, tf);
                 titlePostingListService.putPositingList(wordId, posting);
             }
 
-            for (Map.Entry<String, List<Long>> wordPositions : bodyWordPositions.entrySet()) {
-                String word = wordPositions.getKey();
-                List<Long> positions = wordPositions.getValue();
+            for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
+                String word = wordFreq.getFirst();
+                Integer tf = wordFreq.getSecond();
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
                     // this is for double assurance
                     logger.warn("Word not found: " + word);
                     return wordService.putWord(word);
                 }).getWordId();
 
-                // TODO: put all postings with the same wordId at once
-                Posting posting = postingService.putPosting(wordId, "body", docId, positions);
+                Posting posting = postingService.putPosting(wordId, "body", docId, tf);
                 bodyPostingListService.putPositingList(wordId, posting);
             }
 

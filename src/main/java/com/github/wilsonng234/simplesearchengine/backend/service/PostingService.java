@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,7 +23,8 @@ public class PostingService {
     private MongoTemplate mongoTemplate;
 
     public Optional<Posting> getPosting(String postingId) {
-        return mongoTemplate.find(Query.query(Criteria.where("postingId").is(postingId)), Posting.class).stream().findFirst();
+        return mongoTemplate.find(Query.query(Criteria.where("postingId").is(postingId)), Posting.class)
+                .stream().findFirst();
     }
 
     public Posting putPosting(Posting posting) {
@@ -32,8 +32,7 @@ public class PostingService {
                 Criteria.where("type").is(posting.getType())
                         .and("docId").is(posting.getDocId())
                         .and("wordId").is(posting.getWordId()));
-        Update update = new Update()
-                .set("wordPositions", posting.getWordPositions());
+        Update update = new Update().set("tf", posting.getTf());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<Posting> cls = Posting.class;
 
@@ -46,13 +45,13 @@ public class PostingService {
         }
     }
 
-    public Posting putPosting(String wordId, String type, String docId, List<Long> positions) {
+    public Posting putPosting(String wordId, String type, String docId, int tf) {
         Query query = new Query(
                 Criteria.where("type").is(type)
                         .and("docId").is(docId)
                         .and("wordId").is(wordId));
         Update update = new Update()
-                .set("wordPositions", positions);
+                .set("tf", tf);
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<Posting> cls = Posting.class;
 

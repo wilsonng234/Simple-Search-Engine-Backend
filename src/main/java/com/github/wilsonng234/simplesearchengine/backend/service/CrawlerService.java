@@ -104,6 +104,10 @@ public class CrawlerService {
             words = NLPUtils.removeStopWords(words);
             words = NLPUtils.stemWords(words);
 
+            List<String> oneGrams = new ArrayList<>(words);
+            for (int numGrams = 2; numGrams <= 3; numGrams++)
+                words.addAll(NLPUtils.nGrams(oneGrams, numGrams));
+
             return words;
         }
 
@@ -111,6 +115,10 @@ public class CrawlerService {
             List<String> words = NLPUtils.tokenize(document.body().text());
             words = NLPUtils.removeStopWords(words);
             words = NLPUtils.stemWords(words);
+
+            List<String> oneGrams = new ArrayList<>(words);
+            for (int numGrams = 2; numGrams <= 3; numGrams++)
+                words.addAll(NLPUtils.nGrams(oneGrams, numGrams));
 
             return words;
         }

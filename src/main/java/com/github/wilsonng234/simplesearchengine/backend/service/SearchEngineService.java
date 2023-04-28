@@ -34,9 +34,7 @@ public class SearchEngineService {
     @Autowired
     private DocumentService documentService;
     @Autowired
-    private TitlePostingListService titlePostingListService;
-    @Autowired
-    private BodyPostingListService bodyPostingListService;
+    private PostingListService postingListService;
     @Autowired
     private MongoTemplate mongoTemplate;
     private List<Word> words;
@@ -220,8 +218,8 @@ public class SearchEngineService {
                         continue;
                     }
 
-                    TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
-                    BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
+                    PostingList titlePostingList = postingListService.getPostingList(wordId, "title");
+                    PostingList bodyPostingList = postingListService.getPostingList(wordId, "body");
 
                     List<Posting> titlePostings = mongoTemplate.find(
                             Query.query(

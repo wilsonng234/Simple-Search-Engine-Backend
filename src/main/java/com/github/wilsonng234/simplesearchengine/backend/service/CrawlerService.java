@@ -40,9 +40,7 @@ public class CrawlerService {
     @Autowired
     private PostingService postingService;
     @Autowired
-    private TitlePostingListService titlePostingListService;
-    @Autowired
-    private BodyPostingListService bodyPostingListService;
+    private PostingListService postingListService;
     @Autowired
     private ParentLinkService parentLinkService;
 
@@ -306,7 +304,7 @@ public class CrawlerService {
                 }).getWordId();
 
                 Posting posting = postingService.putPosting(wordId, "title", docId, tf);
-                titlePostingListService.putPostingList(wordId, posting);
+                postingListService.putPostingList(wordId, "title", posting);
             }
 
             for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
@@ -319,7 +317,7 @@ public class CrawlerService {
                 }).getWordId();
 
                 Posting posting = postingService.putPosting(wordId, "body", docId, tf);
-                bodyPostingListService.putPostingList(wordId, posting);
+                postingListService.putPostingList(wordId, "title", posting);
             }
 
             // breadth-first search

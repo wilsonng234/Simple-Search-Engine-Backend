@@ -46,7 +46,12 @@ public class PostingListService {
         }
     }
 
-    public PostingList getPostingList(String wordId) {
-        return mongoTemplate.findById(wordId, PostingList.class);
+    public PostingList getPostingList(String wordId, String type) {
+        Query query = new Query(
+                Criteria.where("wordId").is(wordId)
+                        .and("type").is(type)
+        );
+
+        return mongoTemplate.findOne(query, PostingList.class);
     }
 }

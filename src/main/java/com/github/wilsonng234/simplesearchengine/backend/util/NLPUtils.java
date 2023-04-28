@@ -49,7 +49,20 @@ public abstract class NLPUtils {
                 .filter(word -> !stopWords.contains(word.toLowerCase()))
                 .collect(Collectors.toCollection(LinkedList::new));
     }
-    
+
+    public static List<String> removePunctuations(List<String> words) {
+        List<String> result = new LinkedList<>();
+
+        for (String word : words) {
+            String punctuationRemovedWord = word.replaceAll("[^a-zA-Z0-9]", "");
+
+            if (!punctuationRemovedWord.isEmpty())
+                result.add(punctuationRemovedWord);
+        }
+
+        return result;
+    }
+
     public static String stemWord(String word) {
         return porterStemmer.stemWord(word);
     }

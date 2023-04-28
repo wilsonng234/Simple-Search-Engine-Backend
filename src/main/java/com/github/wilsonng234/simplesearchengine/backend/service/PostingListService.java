@@ -28,8 +28,11 @@ public class PostingListService {
         return mongoTemplate.findAll(PostingList.class);
     }
 
-    public PostingList putPostingList(String wordId, Posting posting) {
-        Query query = new Query(Criteria.where("wordId").is(wordId));
+    public PostingList putPostingList(String wordId, String type, Posting posting) {
+        Query query = new Query(
+                Criteria.where("wordId").is(wordId)
+                        .and("type").is(type)
+        );
         Update update = new Update().max("maxTF", posting.getTf());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<TitlePostingList> cls = TitlePostingList.class;

@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class PostingList {
     @Id
     private String wordId;
+    private String type;            // type.equals("title") || type.equals("body");
     private int maxTF = 0;
 
     public PostingList(String wordId) {

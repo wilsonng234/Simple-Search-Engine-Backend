@@ -313,7 +313,7 @@ public class CrawlerService {
                 }).getWordId();
 
                 Posting posting = postingService.putPosting(wordId, "body", docId, tf);
-                postingListService.putPostingList(wordId, "title", posting);
+                postingListService.putPostingList(wordId, "body", posting);
             }
 
             // breadth-first search

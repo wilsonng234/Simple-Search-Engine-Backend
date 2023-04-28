@@ -84,6 +84,12 @@ public abstract class NLPUtils {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
+    public static List<Pair<String, String>> removeStopWordPosPairs(List<Pair<String, String>> wordPosPairs) {
+        return wordPosPairs.stream()
+                .filter(wordPos -> !stopWords.contains(wordPos.getFirst().toLowerCase()))
+                .collect(Collectors.toCollection(LinkedList::new));
+    }
+
     public static List<String> removePunctuations(List<String> words) {
         List<String> result = new LinkedList<>();
 

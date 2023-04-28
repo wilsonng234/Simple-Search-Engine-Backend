@@ -247,17 +247,13 @@ public class CrawlerService {
             }
             Optional<Document> optionalDocument = documentService.getDocument(crawler.getUrl(), DocumentService.QueryType.URL);
 
-            boolean indexedDocument = false;
-            if (optionalDocument != null) {
-                indexedDocument = optionalDocument.isPresent();
-                if (indexedDocument) {
-                    Document document = optionalDocument.get();
-                    if (document.getLastModificationDate() == lastModificationDate) {
-                        // breadth-first search
-                        bfs(crawlers, crawledLinks, crawler.getChildrenLinks(), crawler.getUrl());
+            if (optionalDocument.isPresent()) {
+                Document document = optionalDocument.get();
+                if (document.getLastModificationDate() == lastModificationDate) {
+                    // breadth-first search
+                    bfs(crawlers, crawledLinks, crawler.getChildrenLinks(), crawler.getUrl());
 
-                        continue;
-                    }
+                    continue;
                 }
             }
 

@@ -31,7 +31,7 @@ public abstract class NLPUtils {
 
             String stopWord = bufferedReader.readLine();
             while (stopWord != null) {
-                stopWords.add(stopWord.toLowerCase());
+                stopWords.add(porterStemmer.stemWord(stopWord));
                 stopWord = bufferedReader.readLine();
             }
         } catch (IOException e) {
@@ -107,11 +107,12 @@ public abstract class NLPUtils {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    public static List<String> removePunctuations(List<String> words) {
+    public static List<String> removePunctuations(List<String> words, boolean removeDoubleQuotationMarks) {
         List<String> result = new LinkedList<>();
 
+        String regex = removeDoubleQuotationMarks ? "[^a-zA-Z0-9]" : "[^a-zA-Z0-9\"]";
         for (String word : words) {
-            String punctuationRemovedWord = word.replaceAll("[^a-zA-Z0-9]", "");
+            String punctuationRemovedWord = word.replaceAll(regex, "");
 
             if (!punctuationRemovedWord.isEmpty())
                 result.add(punctuationRemovedWord);
@@ -120,13 +121,15 @@ public abstract class NLPUtils {
         return result;
     }
 
-    public static List<Pair<String, String>> removePunctuationsWordPosPairs(List<Pair<String, String>> wordPosPairs) {
+    public static List<Pair<String, String>> removePunctuationsWordPosPairs(List<Pair<String, String>> wordPosPairs,
+                                                                            boolean removeDoubleQuotationMarks) {
         List<Pair<String, String>> result = new LinkedList<>();
 
+        String regex = removeDoubleQuotationMarks ? "[^a-zA-Z0-9]" : "[^a-zA-Z0-9\"]";
         for (Pair<String, String> wordPosPair : wordPosPairs) {
             String word = wordPosPair.getFirst();
             String pos = wordPosPair.getSecond();
-            String punctuationRemovedWord = word.replaceAll("[^a-zA-Z0-9]", "");
+            String punctuationRemovedWord = word.replaceAll(regex, "");
 
             if (!punctuationRemovedWord.isEmpty())
                 result.add(Pair.of(punctuationRemovedWord, pos));

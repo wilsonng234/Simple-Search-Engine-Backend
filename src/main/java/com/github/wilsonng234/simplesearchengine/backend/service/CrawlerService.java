@@ -101,11 +101,13 @@ public class CrawlerService {
 
         private List<String> getTitleWords() {
             List<Pair<String, String>> wordPosPairs = NLPUtils.partsOfSpeech(document.head().text());
-            wordPosPairs = NLPUtils.removeStopWordPosPairs(wordPosPairs);
-            wordPosPairs = NLPUtils.removePunctuationsWordPosPairs(wordPosPairs);
+            wordPosPairs = NLPUtils.removePunctuationsWordPosPairs(wordPosPairs, true);
             wordPosPairs = NLPUtils.stemWordPosPairs(wordPosPairs);
 
-            List<String> words = new ArrayList<>(wordPosPairs.stream().map(Pair::getFirst).toList());
+            List<String> words = new ArrayList<>(
+                    NLPUtils.removeStopWordPosPairs(wordPosPairs)
+                            .stream().map(Pair::getFirst).toList()
+            );
             words.addAll(NLPUtils.biGramWordPosPairs(wordPosPairs));
             words.addAll(NLPUtils.triGramWordPosPairs(wordPosPairs));
 
@@ -114,11 +116,13 @@ public class CrawlerService {
 
         private List<String> getBodyWords() {
             List<Pair<String, String>> wordPosPairs = NLPUtils.partsOfSpeech(document.body().text());
-            wordPosPairs = NLPUtils.removeStopWordPosPairs(wordPosPairs);
-            wordPosPairs = NLPUtils.removePunctuationsWordPosPairs(wordPosPairs);
+            wordPosPairs = NLPUtils.removePunctuationsWordPosPairs(wordPosPairs, true);
             wordPosPairs = NLPUtils.stemWordPosPairs(wordPosPairs);
 
-            List<String> words = new ArrayList<>(wordPosPairs.stream().map(Pair::getFirst).toList());
+            List<String> words = new ArrayList<>(
+                    NLPUtils.removeStopWordPosPairs(wordPosPairs)
+                            .stream().map(Pair::getFirst).toList()
+            );
             words.addAll(NLPUtils.biGramWordPosPairs(wordPosPairs));
             words.addAll(NLPUtils.triGramWordPosPairs(wordPosPairs));
 

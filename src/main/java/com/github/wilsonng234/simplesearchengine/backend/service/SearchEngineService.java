@@ -95,8 +95,7 @@ public class SearchEngineService {
 
     private void setUpQueryVector(String query) {
         List<String> normalWords = NLPUtils.tokenize(query);
-        normalWords = NLPUtils.removeStopWords(normalWords);
-        normalWords = NLPUtils.removePunctuations(normalWords);
+        normalWords = NLPUtils.removePunctuations(normalWords, false);
         normalWords = normalWords.stream().map(
                 normalWord -> {
                     if (normalWord.equals("\""))
@@ -115,6 +114,7 @@ public class SearchEngineService {
                     return normalWord;
                 }
         ).collect(Collectors.toCollection(LinkedList::new));
+        normalWords = NLPUtils.removeStopWords(normalWords);
 
         for (String normalWord : normalWords) {
             Optional<Word> wordIdOptional = wordService.getWord(normalWord, WordService.QueryType.WORD);

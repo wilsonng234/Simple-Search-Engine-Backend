@@ -1,7 +1,6 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
-import com.github.wilsonng234.simplesearchengine.backend.repository.DocumentRepository;
 import com.mongodb.DuplicateKeyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,8 +26,6 @@ public class DocumentService {
     }
 
     @Autowired
-    private DocumentRepository documentRepository;
-    @Autowired
     private MongoTemplate mongoTemplate;
 
     /**
@@ -36,16 +33,18 @@ public class DocumentService {
      * @param type - "url" or "docId"
      **/
     public Optional<Document> getDocument(String key, QueryType type) {
-        if (type == QueryType.URL)
-            return documentRepository.findDocumentByUrl(key);
-        else if (type == QueryType.DOCID)
-            return documentRepository.findDocumentByDocId(key);
-        else
+        if (type == QueryType.URL) {
+            Query query = new Query(Criteria.where("url").is(key));
+            return Optional.ofNullable(mongoTemplate.findOne(query, Document.class));
+        } else if (type == QueryType.DOCID) {
+            Query query = new Query(Criteria.where("docId").is(key));
+            return Optional.ofNullable(mongoTemplate.findOne(query, Document.class));
+        } else
             return Optional.empty();
     }
 
     public List<Document> allDocuments() {
-        return documentRepository.findAll();
+        return mongoTemplate.findAll(Document.class);
     }
 
     public Document putDocument(Document document) {

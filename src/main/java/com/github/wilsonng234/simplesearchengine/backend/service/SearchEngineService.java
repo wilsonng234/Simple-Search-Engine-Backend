@@ -4,6 +4,7 @@ import com.github.wilsonng234.simplesearchengine.backend.model.*;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.SearchEngineUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.VSMUtils;
+import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -18,6 +19,9 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -194,83 +198,91 @@ public class SearchEngineService {
     }
 
     private void setUpDocumentsVector() {
-        long start = System.currentTimeMillis();
-        int numDocs = documents.size();
         double titleWeight = 10.0;
+        int numDocs = documents.size();
 
-        long sumOfTimeForTermWeight = 0;
-        long sumOfTimeForPostingList = 0;
-        long sumOfTimeForPostings = 0;
-        for (Word word : words) {
-            String wordId = word.getWordId();
-            Integer wordIndex = wordsMap.get(wordId);
+        class UpdateTermWeightsByWords implements Runnable {
+            private final List<Word> words;
 
-            if (wordIndex == null) {
-                logger.error("Word index is null" + word.getWord());
-                continue;
+            public UpdateTermWeightsByWords(List<Word> words) {
+                this.words = words;
             }
 
-            long temp1 = System.currentTimeMillis();
-            TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
-            BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
-            sumOfTimeForPostingList += System.currentTimeMillis() - temp1;
+            @Override
+            public void run() {
+                for (Word word : words) {
+                    String wordId = word.getWordId();
+                    Integer wordIndex = wordsMap.get(wordId);
 
-            long temp2 = System.currentTimeMillis();
-            List<Posting> titlePostings = mongoTemplate.find(
-                    Query.query(
-                            Criteria.where("type").is("title")
+                    if (wordIndex == null) {
+                        logger.error("Word index is null" + word.getWord());
+                        continue;
+                    }
+
+                    TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
+                    BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
+
+                    List<Posting> titlePostings = mongoTemplate.find(
+                            Query.query(
+                                    Criteria.where("type").is("title")
+                                            .and("wordId").is(wordId)),
+                            Posting.class
+                    );
+                    List<Posting> bodyPostings = mongoTemplate.find(
+                            Query.query(Criteria.where("type").is("body")
                                     .and("wordId").is(wordId)),
-                    Posting.class
-            );
-            List<Posting> bodyPostings = mongoTemplate.find(
-                    Query.query(Criteria.where("type").is("body")
-                            .and("wordId").is(wordId)),
-                    Posting.class
-            );
-            sumOfTimeForPostings += System.currentTimeMillis() - temp2;
+                            Posting.class
+                    );
 
-            int titleMaxTF = titlePostingList.getMaxTF();
-            int titleDocFreq = titlePostings.size();
-            for (Posting posting : titlePostings) {
-                String docId = posting.getDocId();
-                Integer docIndex = documentsMap.get(docId);
-                if (docIndex == null) {
-                    logger.error("Doc index is null" + docId);
-                    continue;
+                    int titleMaxTF = titlePostingList.getMaxTF();
+                    int titleDocFreq = titlePostings.size();
+                    for (Posting posting : titlePostings) {
+                        String docId = posting.getDocId();
+                        Integer docIndex = documentsMap.get(docId);
+                        if (docIndex == null) {
+                            logger.error("Doc index is null" + docId);
+                            continue;
+                        }
+
+                        int tf = posting.getTf();
+
+                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
+                        double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
+                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
+                    }
+
+                    int bodyMaxTF = bodyPostingList.getMaxTF();
+                    int bodyDocFreq = bodyPostings.size();
+                    for (Posting posting : bodyPostings) {
+                        String docId = posting.getDocId();
+                        Integer docIndex = documentsMap.get(docId);
+                        if (docIndex == null) {
+                            logger.error("Doc index is null" + docId);
+                            continue;
+                        }
+
+                        int tf = posting.getTf();
+
+                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
+                        double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, bodyDocFreq, bodyMaxTF);
+                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
+                    }
                 }
-
-                int tf = posting.getTf();
-
-                long temp = System.currentTimeMillis();
-                double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
-                documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
-                sumOfTimeForTermWeight += System.currentTimeMillis() - temp;
-            }
-
-            int bodyMaxTF = bodyPostingList.getMaxTF();
-            int bodyDocFreq = bodyPostings.size();
-            for (Posting posting : bodyPostings) {
-                String docId = posting.getDocId();
-                Integer docIndex = documentsMap.get(docId);
-                if (docIndex == null) {
-                    logger.error("Doc index is null" + docId);
-                    continue;
-                }
-
-                int tf = posting.getTf();
-
-                long temp = System.currentTimeMillis();
-                double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, bodyDocFreq, bodyMaxTF);
-                documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
-                sumOfTimeForTermWeight += System.currentTimeMillis() - temp;
             }
         }
 
-        logger.info("Time to compute term weight: " + sumOfTimeForTermWeight + "ms");
-        logger.info("Time to get posting list: " + sumOfTimeForPostingList + "ms");
-        logger.info("Time to get postings: " + sumOfTimeForPostings + "ms");
-        logger.info("Time to build documents vector: " + (System.currentTimeMillis() - start) + "ms");
+        int numThreads = Runtime.getRuntime().availableProcessors();
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        List<List<Word>> wordsChunks = Lists.partition(words, numThreads);
+        for (List<Word> chunk : wordsChunks)
+            executorService.submit(new UpdateTermWeightsByWords(chunk));
+        executorService.shutdown();     // stop accepting new tasks
+        try {
+            if (!executorService.awaitTermination(60, TimeUnit.MINUTES)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            executorService.shutdownNow();
+        }
     }
 }

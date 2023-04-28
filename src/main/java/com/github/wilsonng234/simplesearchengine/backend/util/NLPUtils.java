@@ -73,7 +73,6 @@ public abstract class NLPUtils {
             stringBuilder.setLength(0);
         }
 
-        System.out.println(nGrams);
         return nGrams;
     }
 

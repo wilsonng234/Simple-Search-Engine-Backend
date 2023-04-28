@@ -268,9 +268,9 @@ public class SearchEngineService {
             }
         }
 
-        System.out.println("Time to compute term weight: " + sumOfTimeForTermWeight + "ms");
-        System.out.println("Time to get posting list: " + sumOfTimeForPostingList + "ms");
-        System.out.println("Time to get postings: " + sumOfTimeForPostings + "ms");
-        System.out.println("Time to build documents vector: " + (System.currentTimeMillis() - start) + "ms");
+        logger.info("Time to compute term weight: " + sumOfTimeForTermWeight + "ms");
+        logger.info("Time to get posting list: " + sumOfTimeForPostingList + "ms");
+        logger.info("Time to get postings: " + sumOfTimeForPostings + "ms");
+        logger.info("Time to build documents vector: " + (System.currentTimeMillis() - start) + "ms");
     }
 }

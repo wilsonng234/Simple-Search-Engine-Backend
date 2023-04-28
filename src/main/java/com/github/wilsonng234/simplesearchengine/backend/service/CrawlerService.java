@@ -204,6 +204,7 @@ public class CrawlerService {
 
     public boolean crawl(String url, String pages) {
         // Return: a boolean value indicating whether the crawling was successful or not
+        long start = System.currentTimeMillis();
         int pagesToCrawl = Integer.parseInt(pages);
         int crawledPages = 0;
 
@@ -320,6 +321,8 @@ public class CrawlerService {
             crawledPages++;
         }
 
+        long end = System.currentTimeMillis();
+        logger.info("Crawled " + crawledPages + " pages in " + (end - start) / 1000.0 + " seconds");
         return true;
     }
 }

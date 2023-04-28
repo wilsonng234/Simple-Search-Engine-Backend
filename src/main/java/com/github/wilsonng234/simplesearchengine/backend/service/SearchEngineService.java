@@ -196,17 +196,6 @@ public class SearchEngineService {
     }
 
     private void setUpDocumentsVector() {
-        /*
-         * TODO: Create TitlePosting and BodyPosting classes for quicker access to postings
-         *             List<Posting> titlePostings = mongoTemplate.find(
-         *                     Query.query(Criteria.where("wordId").is(wordId)),
-         *                     TitlePosting.class
-         *             );
-         *             List<Posting> bodyPostings = mongoTemplate.find(
-         *                     Query.query(Criteria.where("wordId").is(wordId)),
-         *                     BodyPosting.class
-         *             );
-         */
         long start = System.currentTimeMillis();
         int numDocs = documents.size();
         double titleWeight = 10.0;

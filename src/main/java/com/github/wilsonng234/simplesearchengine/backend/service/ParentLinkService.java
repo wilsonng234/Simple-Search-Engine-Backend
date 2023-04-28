@@ -1,7 +1,6 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
-import com.github.wilsonng234.simplesearchengine.backend.repository.ParentLinkRepository;
 import com.mongodb.DuplicateKeyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,13 +20,17 @@ import java.util.Optional;
 public class ParentLinkService {
     private static final Logger logger = LogManager.getLogger(ParentLinkService.class);
     @Autowired
-    ParentLinkRepository parentLinkRepository;
-    @Autowired
     MongoTemplate mongoTemplate;
+
+    public Optional<ParentLink> getParentLinks(String url) {
+        Query query = new Query(Criteria.where("url").is(url));
+        return Optional.ofNullable(mongoTemplate.findOne(query, ParentLink.class));
+    }
 
     public ParentLink putParentLinks(ParentLink parentLink) {
         Query query = new Query(Criteria.where("url").is(parentLink.getUrl()));
-        Update update = new Update().set("url", parentLink.getUrl()).set("parentUrls", parentLink.getParentUrls());
+        Update update = new Update()
+                .set("parentUrls", parentLink.getParentUrls());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<ParentLink> cls = ParentLink.class;
 
@@ -38,9 +41,5 @@ public class ParentLinkService {
             logger.warn(duplicateKeyException.getMessage());
             return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
         }
-    }
-
-    public Optional<ParentLink> getParentLinks(String url) {
-        return parentLinkRepository.findParentLinkByUrl(url);
     }
 }

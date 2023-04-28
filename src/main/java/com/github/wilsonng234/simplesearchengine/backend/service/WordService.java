@@ -1,7 +1,6 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Word;
-import com.github.wilsonng234.simplesearchengine.backend.repository.WordRepository;
 import com.mongodb.DuplicateKeyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,8 +26,6 @@ public class WordService {
     }
 
     @Autowired
-    private WordRepository wordRepository;
-    @Autowired
     private MongoTemplate mongoTemplate;
 
     /**
@@ -36,16 +33,18 @@ public class WordService {
      * @param type - "word" or "wordId"
      **/
     public Optional<Word> getWord(String key, QueryType type) {
-        if (type == QueryType.WORD)
-            return wordRepository.findWordByWord(key);
-        else if (type == QueryType.WORDID)
-            return wordRepository.findWordByWordId(key);
-        else
+        if (type == QueryType.WORDID) {
+            Query query = new Query(Criteria.where("wordId").is(key));
+            return Optional.ofNullable(mongoTemplate.findOne(query, Word.class));
+        } else if (type == QueryType.WORD) {
+            Query query = new Query(Criteria.where("word").is(key));
+            return Optional.ofNullable(mongoTemplate.findOne(query, Word.class));
+        } else
             return Optional.empty();
     }
 
     public List<Word> allWords() {
-        return wordRepository.findAll();
+        return mongoTemplate.findAll(Word.class);
     }
 
     public Word putWord(String word) {

@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class PostingList {
+@Document(collection = "postingLists")
+public class PostingList {
     @Id
     private String wordId;
     private int maxTF = 0;

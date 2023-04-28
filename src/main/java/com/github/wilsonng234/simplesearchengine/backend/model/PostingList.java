@@ -16,7 +16,8 @@ public class PostingList {
     private String type;            // type.equals("title") || type.equals("body");
     private int maxTF = 0;
 
-    public PostingList(String wordId) {
+    public PostingList(String wordId, String type) {
         this.wordId = wordId;
+        this.type = type;
     }
 }

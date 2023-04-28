@@ -3,6 +3,8 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.repository.WordRepository;
 import com.mongodb.DuplicateKeyException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -18,6 +20,8 @@ import java.util.Optional;
 @Service
 @Scope("prototype")
 public class WordService {
+    private static final Logger logger = LogManager.getLogger(WordService.class);
+
     public enum QueryType {
         WORD, WORDID
     }
@@ -54,7 +58,7 @@ public class WordService {
             return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
         } catch (DuplicateKeyException duplicateKeyException) {
             // update again if duplicate key exception
-            System.out.println(duplicateKeyException.getMessage());
+            logger.warn(duplicateKeyException.getMessage());
             return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
         }
     }

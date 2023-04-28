@@ -16,6 +16,7 @@ public abstract class NLPUtils {
     private static final String RESOURCE_PATH = "src" + File.separator + "main" + File.separator + "resources" + File.separator;
     private static final Set<String> stopWords = new HashSet<>();
     private static final PorterStemmer porterStemmer = new PorterStemmer();
+    private static ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(StringBuilder::new);
 
     static {
         try {
@@ -57,8 +58,20 @@ public abstract class NLPUtils {
 
     public static List<String> nGrams(List<String> words, int n) {
         List<String> nGrams = new LinkedList<>();
-        for (int i = 0; i < words.size() - n + 1; i++)
-            nGrams.add(String.join(" ", words.subList(i, i + n)));
+        if (words.size() == 0)
+            return nGrams;
+
+        StringBuilder stringBuilder = stringBuilderThreadLocal.get();
+        for (int i = 0; i < words.size() - n + 1; i++) {
+            for (int j = 0; j < n - 1; j++) {
+                stringBuilder.append(words.get(i + j));
+                stringBuilder.append(" ");
+            }
+            stringBuilder.append(words.get(i + n - 1));
+
+            nGrams.add(stringBuilder.toString());
+            stringBuilder.setLength(0);
+        }
 
         return nGrams;
     }

@@ -11,6 +11,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +30,11 @@ public class SearchEngineService {
     @Autowired
     private DocumentService documentService;
     @Autowired
-    private PostingService postingService;
-    @Autowired
     private TitlePostingListService titlePostingListService;
     @Autowired
     private BodyPostingListService bodyPostingListService;
+    @Autowired
+    private MongoTemplate mongoTemplate;
     private List<Word> words;
     private List<Document> documents;
     private List<List<Double>> documentsVector;     // index1: docId, index2: wordID, value: termWeight
@@ -56,32 +59,37 @@ public class SearchEngineService {
     }
 
     public List<QueryResult> search(String query) {
+        long start = System.currentTimeMillis();
         setUp();
         setUpQueryVector(query);
         setUpScoresVector();
 
         List<Integer> topKIndices = SearchEngineUtils.getTopKIndices(scoresVector, 50);
-        List<Document> topKDocuments = topKIndices.stream()
-                .map(index -> documents.get(index))
-                .collect(Collectors.toCollection(ArrayList::new));
 
-        int i = 0;
-        List<QueryResult> queryResults = new ArrayList<>(topKDocuments.size());
-        for (Document document : topKDocuments) {
-            QueryResult queryResult = new QueryResult(scoresVector.get(i), document.getDocId(),
-                    document.getUrl(), document.getSize(), document.getTitle(), document.getLastModificationDate(),
-                    document.getTitleWordFreqs(), document.getBodyWordFreqs(), document.getChildrenUrls());
+        List<QueryResult> queryResults = new ArrayList<>(topKIndices.size());
+        for (Integer index : topKIndices) {
+            Document document = documents.get(index);
+            QueryResult queryResult = new QueryResult(
+                    scoresVector.get(index),
+                    document.getDocId(),
+                    document.getUrl(),
+                    document.getSize(),
+                    document.getTitle(),
+                    document.getLastModificationDate(),
+                    document.getTitleWordFreqs(),
+                    document.getBodyWordFreqs(),
+                    document.getChildrenUrls()
+            );
 
             queryResults.add(queryResult);
-            i++;
         }
         queryResults.sort(Comparator.comparingDouble(QueryResult::getScore).reversed());
 
+        System.out.println("Search time: " + (System.currentTimeMillis() - start) + "ms");
         return queryResults;
     }
 
     private void setUpQueryVector(String query) {
-        // TODO: Fix the query vector computation if needed
         List<String> normalWords = NLPUtils.tokenize(query);
         normalWords = NLPUtils.removeStopWords(normalWords);
         normalWords = normalWords.stream().map(
@@ -174,20 +182,25 @@ public class SearchEngineService {
 
         documentsVector = new ArrayList<>(documents.size());
         for (i = 0; i < documents.size(); i++) {
-            documentsVector.add(new ArrayList<>(words.size()));
+            List<Double> documentVector = new ArrayList<>(words.size());
             for (int j = 0; j < words.size(); j++) {
-                documentsVector.get(i).add(0.0);
+                documentVector.add(0.0);
             }
+
+            documentsVector.add(documentVector);
         }
 
         setUpDocumentsVector();
     }
 
     private void setUpDocumentsVector() {
-        // TODO: fix the maxTF and df computation if needed
+        long start = System.currentTimeMillis();
         int numDocs = documents.size();
         double titleWeight = 10.0;
 
+        long sumOfTimeForTermWeight = 0;
+        long sumOfTimeForPostingList = 0;
+        long sumOfTimeForPostings = 0;
         for (Word word : words) {
             String wordId = word.getWordId();
             Integer wordIndex = wordsMap.get(wordId);
@@ -197,20 +210,28 @@ public class SearchEngineService {
                 continue;
             }
 
+            long temp1 = System.currentTimeMillis();
             TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
             BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
-            int titleMaxTF = titlePostingList.getMaxTF();
-            int titleDocFreq = titlePostingList.getPostingIds().size();
-            int bodyMaxTF = bodyPostingList.getMaxTF();
-            int bodyDocFreq = bodyPostingList.getPostingIds().size();
+            sumOfTimeForPostingList += System.currentTimeMillis() - temp1;
 
-            for (String postingId : titlePostingList.getPostingIds()) {
-                Optional<Posting> postingOptional = postingService.getPosting(postingId);
-                if (postingOptional.isEmpty()) {
-                    logger.error("Posting is empty" + postingId);
-                    continue;
-                }
-                Posting posting = postingOptional.get();
+            long temp2 = System.currentTimeMillis();
+            List<Posting> titlePostings = mongoTemplate.find(
+                    Query.query(
+                            Criteria.where("type").is("title")
+                                    .and("wordId").is(wordId)),
+                    Posting.class
+            );
+            List<Posting> bodyPostings = mongoTemplate.find(
+                    Query.query(Criteria.where("type").is("body")
+                            .and("wordId").is(wordId)),
+                    Posting.class
+            );
+            sumOfTimeForPostings += System.currentTimeMillis() - temp2;
+
+            int titleMaxTF = titlePostingList.getMaxTF();
+            int titleDocFreq = titlePostings.size();
+            for (Posting posting : titlePostings) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
                 if (docIndex == null) {
@@ -218,21 +239,18 @@ public class SearchEngineService {
                     continue;
                 }
 
-                List<Long> positions = posting.getWordPositions();
-                int tf = positions.size();
+                int tf = posting.getTf();
 
+                long temp = System.currentTimeMillis();
                 double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
                 double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
                 documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
+                sumOfTimeForTermWeight += System.currentTimeMillis() - temp;
             }
 
-            for (String postingId : bodyPostingList.getPostingIds()) {
-                Optional<Posting> postingOptional = postingService.getPosting(postingId);
-                if (postingOptional.isEmpty()) {
-                    logger.error("Posting is empty" + postingId);
-                    continue;
-                }
-                Posting posting = postingOptional.get();
+            int bodyMaxTF = bodyPostingList.getMaxTF();
+            int bodyDocFreq = bodyPostings.size();
+            for (Posting posting : bodyPostings) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
                 if (docIndex == null) {
@@ -240,13 +258,19 @@ public class SearchEngineService {
                     continue;
                 }
 
-                List<Long> positions = posting.getWordPositions();
-                int tf = positions.size();
+                int tf = posting.getTf();
 
+                long temp = System.currentTimeMillis();
                 double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
                 double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, bodyDocFreq, bodyMaxTF);
                 documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
+                sumOfTimeForTermWeight += System.currentTimeMillis() - temp;
             }
         }
+
+        logger.info("Time to compute term weight: " + sumOfTimeForTermWeight + "ms");
+        logger.info("Time to get posting list: " + sumOfTimeForPostingList + "ms");
+        logger.info("Time to get postings: " + sumOfTimeForPostings + "ms");
+        logger.info("Time to build documents vector: " + (System.currentTimeMillis() - start) + "ms");
     }
 }

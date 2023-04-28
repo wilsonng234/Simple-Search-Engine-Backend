@@ -27,10 +27,9 @@ import java.util.*;
 @Scope("prototype")
 public class CrawlerService {
     private static final Logger logger = LogManager.getLogger(CrawlerService.class);
-    public static SimpleDateFormat simpleDateFormat;
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
-    static {
-        simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    {
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
@@ -105,6 +104,10 @@ public class CrawlerService {
             words = NLPUtils.removeStopWords(words);
             words = NLPUtils.stemWords(words);
 
+            List<String> oneGrams = new ArrayList<>(words);
+            for (int numGrams = 2; numGrams <= 3; numGrams++)
+                words.addAll(NLPUtils.nGrams(oneGrams, numGrams));
+
             return words;
         }
 
@@ -113,7 +116,55 @@ public class CrawlerService {
             words = NLPUtils.removeStopWords(words);
             words = NLPUtils.stemWords(words);
 
+            List<String> oneGrams = new ArrayList<>(words);
+            for (int numGrams = 2; numGrams <= 3; numGrams++)
+                words.addAll(NLPUtils.nGrams(oneGrams, numGrams));
+
             return words;
+        }
+
+        private List<Pair<String, Integer>> getTitleWordFreqs() {
+            List<String> words = getTitleWords();
+
+            Map<String, Integer> wordFreqsMap = new HashMap<>();
+            for (String word : words) {
+                if (!wordFreqsMap.containsKey(word))
+                    wordFreqsMap.put(word, 1);
+                wordFreqsMap.put(word, wordFreqsMap.get(word) + 1);
+            }
+
+            List<Pair<String, Integer>> wordFreqsPairs = new ArrayList<>(wordFreqsMap.size());
+            for (Map.Entry<String, Integer> entry : wordFreqsMap.entrySet()) {
+                String word = entry.getKey();
+                Integer freq = entry.getValue();
+
+                wordFreqsPairs.add(Pair.of(word, freq));
+            }
+
+            wordFreqsPairs = CrawlerUtils.sortWordFreqs(wordFreqsPairs);
+            return wordFreqsPairs;
+        }
+
+        private List<Pair<String, Integer>> getBodyWordFreqs() {
+            List<String> words = getBodyWords();
+
+            Map<String, Integer> wordFreqsMap = new HashMap<>();
+            for (String word : words) {
+                if (!wordFreqsMap.containsKey(word))
+                    wordFreqsMap.put(word, 1);
+                wordFreqsMap.put(word, wordFreqsMap.get(word) + 1);
+            }
+
+            List<Pair<String, Integer>> wordFreqsPairs = new ArrayList<>(wordFreqsMap.size());
+            for (Map.Entry<String, Integer> entry : wordFreqsMap.entrySet()) {
+                String word = entry.getKey();
+                Integer freq = entry.getValue();
+
+                wordFreqsPairs.add(Pair.of(word, freq));
+            }
+
+            wordFreqsPairs = CrawlerUtils.sortWordFreqs(wordFreqsPairs);
+            return wordFreqsPairs;
         }
 
         private Set<String> getChildrenLinks() {
@@ -137,84 +188,6 @@ public class CrawlerService {
 
             return childrenLinks;
         }
-
-        private Map<String, List<Long>> getTitleWordPositions() {
-            List<String> words = NLPUtils.tokenize(document.head().text());
-            words = NLPUtils.removeStopWords(words);
-            words = NLPUtils.stemWords(words);
-
-            Map<String, List<Long>> wordPositions = new HashMap<>();
-            for (int i = 0; i < words.size(); i++) {
-                String word = words.get(i);
-                if (!wordPositions.containsKey(word))
-                    wordPositions.put(word, new LinkedList<>());
-                wordPositions.get(word).add((long) i);
-            }
-
-            List<String> biGrams = NLPUtils.nGrams(words, 2);
-            List<String> triGrams = NLPUtils.nGrams(words, 3);
-
-            // add biGrams
-            for (int i = 0; i < biGrams.size(); i++) {
-                String biGram = biGrams.get(i);
-                if (!wordPositions.containsKey(biGram))
-                    wordPositions.put(biGram, new LinkedList<>());
-                wordPositions.get(biGram).add((long) i);
-            }
-
-            // add triGrams
-            for (int i = 0; i < triGrams.size(); i++) {
-                String triGram = triGrams.get(i);
-                if (!wordPositions.containsKey(triGram))
-                    wordPositions.put(triGram, new LinkedList<>());
-                wordPositions.get(triGram).add((long) i);
-            }
-
-            return wordPositions;
-        }
-
-        private Map<String, List<Long>> getBodyWordPositions() {
-            List<String> words = NLPUtils.tokenize(document.body().text());
-            words = NLPUtils.removeStopWords(words);
-            words = NLPUtils.stemWords(words);
-
-            Map<String, List<Long>> wordPositions = new HashMap<>();
-            for (int i = 0; i < words.size(); i++) {
-                String word = words.get(i);
-                if (!wordPositions.containsKey(word))
-                    wordPositions.put(word, new LinkedList<>());
-                wordPositions.get(word).add((long) i);
-            }
-
-            List<String> biGrams = NLPUtils.nGrams(words, 2);
-            List<String> triGrams = NLPUtils.nGrams(words, 3);
-
-            // add biGrams
-            for (int i = 0; i < biGrams.size(); i++) {
-                String biGram = biGrams.get(i);
-                if (!wordPositions.containsKey(biGram))
-                    wordPositions.put(biGram, new LinkedList<>());
-                wordPositions.get(biGram).add((long) i);
-            }
-
-            // add triGrams
-            for (int i = 0; i < triGrams.size(); i++) {
-                String triGram = triGrams.get(i);
-                if (!wordPositions.containsKey(triGram))
-                    wordPositions.put(triGram, new LinkedList<>());
-                wordPositions.get(triGram).add((long) i);
-            }
-
-//            for (String biGram : biGrams)
-//                if (biGram.split("\\s+").length != 2)
-//                    logger.warn("BiGram length != 2: " + biGram);
-//
-//            for (String triGram : triGrams)
-//                if (triGram.split("\\s+").length != 3)
-//                    logger.warn("TriGram length != 3: " + triGram);
-
-            return wordPositions;
-        }
     }
 
     private void bfs(Queue<Crawler> crawlers, Set<String> crawledLinks, Set<String> childrenLinks, String url) {
@@ -231,6 +204,7 @@ public class CrawlerService {
 
     public boolean crawl(String url, String pages) {
         // Return: a boolean value indicating whether the crawling was successful or not
+        long start = System.currentTimeMillis();
         int pagesToCrawl = Integer.parseInt(pages);
         int crawledPages = 0;
 
@@ -286,32 +260,20 @@ public class CrawlerService {
             String title = crawler.getTitle();
 
             // set up titleWordFreqs
-            Map<String, List<Long>> titleWordPositions = crawler.getTitleWordPositions();
-            List<Pair<String, Integer>> titleWordFreqs = new ArrayList<>(titleWordPositions.size());
-            for (Map.Entry<String, List<Long>> entry : titleWordPositions.entrySet()) {
-                String titleWord = entry.getKey();
-                wordService.getWord(titleWord, WordService.QueryType.WORD)
-                        .orElseGet(() -> wordService.putWord(titleWord));
-                List<Long> positions = entry.getValue();
-                int freq = positions.size();
-
-                titleWordFreqs.add(Pair.of(titleWord, freq));
+            List<Pair<String, Integer>> titleWordFreqs = crawler.getTitleWordFreqs();
+            for (Pair<String, Integer> wordFreq : titleWordFreqs) {
+                String word = wordFreq.getFirst();
+                wordService.getWord(word, WordService.QueryType.WORD)
+                        .orElseGet(() -> wordService.putWord(word));
             }
-            titleWordFreqs = CrawlerUtils.sortWordFreqs(titleWordFreqs);
 
             // set up bodyWordFreqs
-            Map<String, List<Long>> bodyWordPositions = crawler.getBodyWordPositions();
-            List<Pair<String, Integer>> bodyWordFreqs = new ArrayList<>(bodyWordPositions.size());
-            for (Map.Entry<String, List<Long>> entry : bodyWordPositions.entrySet()) {
-                String bodyWord = entry.getKey();
-                wordService.getWord(bodyWord, WordService.QueryType.WORD)
-                        .orElseGet(() -> wordService.putWord(bodyWord));
-                List<Long> positions = entry.getValue();
-                int freq = positions.size();
-
-                bodyWordFreqs.add(Pair.of(bodyWord, freq));
+            List<Pair<String, Integer>> bodyWordFreqs = crawler.getBodyWordFreqs();
+            for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
+                String word = wordFreq.getFirst();
+                wordService.getWord(word, WordService.QueryType.WORD)
+                        .orElseGet(() -> wordService.putWord(word));
             }
-            bodyWordFreqs = CrawlerUtils.sortWordFreqs(bodyWordFreqs);
 
             Set<String> childrenLinks = crawler.getChildrenLinks();
             Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordFreqs, bodyWordFreqs, childrenLinks);
@@ -326,30 +288,30 @@ public class CrawlerService {
             }
 
             String docId = document.getDocId();
-            for (Map.Entry<String, List<Long>> wordPositions : titleWordPositions.entrySet()) {
-                String word = wordPositions.getKey();
-                List<Long> positions = wordPositions.getValue();
+            for (Pair<String, Integer> wordFreq : titleWordFreqs) {
+                String word = wordFreq.getFirst();
+                Integer tf = wordFreq.getSecond();
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
                     // this is for double assurance
                     logger.warn("Word not found: " + word);
                     return wordService.putWord(word);
                 }).getWordId();
 
-                Posting posting = postingService.putPosting(wordId, docId, positions);
-                titlePostingListService.putPositingList(wordId, posting);
+                Posting posting = postingService.putPosting(wordId, "title", docId, tf);
+                titlePostingListService.putPostingList(wordId, posting);
             }
 
-            for (Map.Entry<String, List<Long>> wordPositions : bodyWordPositions.entrySet()) {
-                String word = wordPositions.getKey();
-                List<Long> positions = wordPositions.getValue();
+            for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
+                String word = wordFreq.getFirst();
+                Integer tf = wordFreq.getSecond();
                 String wordId = wordService.getWord(word, WordService.QueryType.WORD).orElseGet(() -> {
                     // this is for double assurance
                     logger.warn("Word not found: " + word);
                     return wordService.putWord(word);
                 }).getWordId();
 
-                Posting posting = postingService.putPosting(wordId, docId, positions);
-                bodyPostingListService.putPositingList(wordId, posting);
+                Posting posting = postingService.putPosting(wordId, "body", docId, tf);
+                bodyPostingListService.putPostingList(wordId, posting);
             }
 
             // breadth-first search
@@ -359,6 +321,8 @@ public class CrawlerService {
             crawledPages++;
         }
 
+        long end = System.currentTimeMillis();
+        logger.info("Crawled " + crawledPages + " pages in " + (end - start) / 1000.0 + " seconds");
         return true;
     }
 }

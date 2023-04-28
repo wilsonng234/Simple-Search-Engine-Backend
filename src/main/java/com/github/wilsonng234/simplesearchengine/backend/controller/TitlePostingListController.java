@@ -43,6 +43,6 @@ public class TitlePostingListController extends PostingListController {
     @Override
     @PutMapping("/{wordId}")
     public ResponseEntity<? extends PostingList> putPostingList(@PathVariable String wordId, @RequestBody Posting posting) {
-        return new ResponseEntity<>(titlePostingListService.putPositingList(wordId, posting), HttpStatus.OK);
+        return new ResponseEntity<>(titlePostingListService.putPostingList(wordId, posting), HttpStatus.OK);
     }
 }

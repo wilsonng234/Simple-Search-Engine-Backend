@@ -200,6 +200,7 @@ public class SearchEngineService {
 
         long sumOfTimeForTermWeight = 0;
         long sumOfTimeForPostingList = 0;
+        long sumOfTimeForPostings = 0;
         for (Word word : words) {
             String wordId = word.getWordId();
             Integer wordIndex = wordsMap.get(wordId);
@@ -212,21 +213,24 @@ public class SearchEngineService {
             long temp1 = System.currentTimeMillis();
             TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
             BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
+            sumOfTimeForPostingList += System.currentTimeMillis() - temp1;
 
+            long temp2 = System.currentTimeMillis();
             List<Posting> titlePostings = mongoTemplate.find(
-                    Query.query(Criteria.where("wordId").is(wordId).and("type").is("title")),
+                    Query.query(
+                            Criteria.where("type").is("title")
+                                    .and("wordId").is(wordId)),
                     Posting.class
             );
             List<Posting> bodyPostings = mongoTemplate.find(
-                    Query.query(Criteria.where("wordId").is(wordId).and("type").is("body")),
+                    Query.query(Criteria.where("type").is("body")
+                            .and("wordId").is(wordId)),
                     Posting.class
             );
+            sumOfTimeForPostings += System.currentTimeMillis() - temp2;
+
             int titleMaxTF = titlePostingList.getMaxTF();
             int titleDocFreq = titlePostings.size();
-            int bodyMaxTF = bodyPostingList.getMaxTF();
-            int bodyDocFreq = bodyPostings.size();
-            sumOfTimeForPostingList += System.currentTimeMillis() - temp1;
-
             for (Posting posting : titlePostings) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
@@ -244,6 +248,8 @@ public class SearchEngineService {
                 sumOfTimeForTermWeight += System.currentTimeMillis() - temp;
             }
 
+            int bodyMaxTF = bodyPostingList.getMaxTF();
+            int bodyDocFreq = bodyPostings.size();
             for (Posting posting : bodyPostings) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
@@ -264,6 +270,7 @@ public class SearchEngineService {
 
         System.out.println("Time to compute term weight: " + sumOfTimeForTermWeight + "ms");
         System.out.println("Time to get posting list: " + sumOfTimeForPostingList + "ms");
+        System.out.println("Time to get postings: " + sumOfTimeForPostings + "ms");
         System.out.println("Time to build documents vector: " + (System.currentTimeMillis() - start) + "ms");
     }
 }

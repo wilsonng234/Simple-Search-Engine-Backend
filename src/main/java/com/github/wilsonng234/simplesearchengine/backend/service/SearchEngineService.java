@@ -96,6 +96,7 @@ public class SearchEngineService {
     private void setUpQueryVector(String query) {
         List<String> normalWords = NLPUtils.tokenize(query);
         normalWords = NLPUtils.removeStopWords(normalWords);
+        normalWords = NLPUtils.removePunctuations(normalWords);
         normalWords = normalWords.stream().map(
                 normalWord -> {
                     if (normalWord.equals("\""))

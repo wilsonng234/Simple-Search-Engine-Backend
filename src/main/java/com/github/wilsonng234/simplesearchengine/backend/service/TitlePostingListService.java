@@ -39,7 +39,7 @@ public class TitlePostingListService extends PostingListService {
     }
 
     @Override
-    public TitlePostingList putPositingList(String wordId, Posting posting) {
+    public TitlePostingList putPostingList(String wordId, Posting posting) {
         Query query = new Query(Criteria.where("wordId").is(wordId));
         Update update = new Update().max("maxTF", posting.getTf());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);

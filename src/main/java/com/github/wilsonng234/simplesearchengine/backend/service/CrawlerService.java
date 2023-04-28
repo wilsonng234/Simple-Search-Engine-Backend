@@ -297,7 +297,7 @@ public class CrawlerService {
                 }).getWordId();
 
                 Posting posting = postingService.putPosting(wordId, "title", docId, tf);
-                titlePostingListService.putPositingList(wordId, posting);
+                titlePostingListService.putPostingList(wordId, posting);
             }
 
             for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
@@ -310,7 +310,7 @@ public class CrawlerService {
                 }).getWordId();
 
                 Posting posting = postingService.putPosting(wordId, "body", docId, tf);
-                bodyPostingListService.putPositingList(wordId, posting);
+                bodyPostingListService.putPostingList(wordId, posting);
             }
 
             // breadth-first search

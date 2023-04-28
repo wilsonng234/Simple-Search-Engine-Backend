@@ -2,7 +2,6 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
 import com.github.wilsonng234.simplesearchengine.backend.model.PostingList;
-import com.github.wilsonng234.simplesearchengine.backend.model.TitlePostingList;
 import com.mongodb.DuplicateKeyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

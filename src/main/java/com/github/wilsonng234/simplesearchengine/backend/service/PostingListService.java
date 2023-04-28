@@ -46,6 +46,4 @@ public class PostingListService {
     public PostingList getPostingList(String wordId) {
         return mongoTemplate.findById(wordId, PostingList.class);
     }
-
-    ;
 }

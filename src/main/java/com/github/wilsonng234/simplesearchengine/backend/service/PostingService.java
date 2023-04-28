@@ -33,7 +33,7 @@ public class PostingService {
             return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
         } catch (DuplicateKeyException duplicateKeyException) {
             // update again if duplicate key exception
-            System.out.println(duplicateKeyException.getMessage());
+            logger.info(duplicateKeyException.getMessage());
             return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
         }
     }

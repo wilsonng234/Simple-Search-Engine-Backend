@@ -89,7 +89,7 @@ public class SearchEngineService {
         }
         queryResults.sort(Comparator.comparingDouble(QueryResult::getScore).reversed());
 
-        System.out.println("Search time: " + (System.currentTimeMillis() - start) + "ms");
+        logger.info("Search time: " + (System.currentTimeMillis() - start) + "ms");
         return queryResults;
     }
 

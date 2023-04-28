@@ -34,7 +34,7 @@ public class PostingListService {
         );
         Update update = new Update().max("maxTF", posting.getTf());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
-        Class<TitlePostingList> cls = TitlePostingList.class;
+        Class<PostingList> cls = PostingList.class;
 
         try {
             return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);

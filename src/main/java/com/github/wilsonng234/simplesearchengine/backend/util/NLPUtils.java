@@ -45,15 +45,19 @@ public abstract class NLPUtils {
     }
 
     public static List<String> removeStopWords(List<String> words) {
-        return words.stream().filter(word -> !stopWords.contains(word.toLowerCase())).collect(Collectors.toCollection(LinkedList::new));
+        return words.stream()
+                .filter(word -> !stopWords.contains(word.toLowerCase()))
+                .collect(Collectors.toCollection(LinkedList::new));
     }
-
+    
     public static String stemWord(String word) {
         return porterStemmer.stemWord(word);
     }
 
     public static List<String> stemWords(List<String> words) {
-        return words.stream().map(porterStemmer::stemWord).collect(Collectors.toCollection(LinkedList::new));
+        return words.stream()
+                .map(porterStemmer::stemWord)
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     public static List<String> nGrams(List<String> words, int n) {

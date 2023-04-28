@@ -45,7 +45,22 @@ public abstract class NLPUtils {
     }
 
     public static List<String> removeStopWords(List<String> words) {
-        return words.stream().filter(word -> !stopWords.contains(word.toLowerCase())).collect(Collectors.toCollection(LinkedList::new));
+        return words.stream()
+                .filter(word -> !stopWords.contains(word.toLowerCase()))
+                .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    public static List<String> removePunctuations(List<String> words) {
+        List<String> result = new LinkedList<>();
+
+        for (String word : words) {
+            String punctuationRemovedWord = word.replaceAll("[^a-zA-Z0-9]", "");
+
+            if (!punctuationRemovedWord.isEmpty())
+                result.add(punctuationRemovedWord);
+        }
+
+        return result;
     }
 
     public static String stemWord(String word) {
@@ -53,7 +68,9 @@ public abstract class NLPUtils {
     }
 
     public static List<String> stemWords(List<String> words) {
-        return words.stream().map(porterStemmer::stemWord).collect(Collectors.toCollection(LinkedList::new));
+        return words.stream()
+                .map(porterStemmer::stemWord)
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     public static List<String> nGrams(List<String> words, int n) {

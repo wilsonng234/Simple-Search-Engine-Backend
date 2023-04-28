@@ -1,8 +1,11 @@
 package com.github.wilsonng234.simplesearchengine.backend.util;
 
 import ca.rmen.porterstemmer.PorterStemmer;
+import edu.stanford.nlp.simple.Document;
+import edu.stanford.nlp.simple.Sentence;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,6 +34,37 @@ public abstract class NLPUtils {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    public static List<Pair<String, String>> partsOfSpeech(String text) {
+        Document document = new Document(text + "?");
+        List<Sentence> sentences = document.sentences();
+        List<String> words = sentences.stream()
+                .flatMap(sentence -> sentence.words().stream())
+                .collect(Collectors.toCollection(ArrayList::new));
+        List<String> posTags = sentences.stream()
+                .flatMap(sentence -> sentence.posTags().stream())
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (words.size() != posTags.size()) {
+            logger.warn("Words and POS tags size mismatch");
+
+            if (words.size() < posTags.size()) {
+                while (words.size() < posTags.size()) {
+                    words.add("?");
+                }
+            } else {
+                while (posTags.size() < words.size()) {
+                    posTags.add(".");
+                }
+            }
+        }
+
+        List<Pair<String, String>> partsOfSpeech = new LinkedList<>();
+        for (int i = 0; i < words.size(); i++)
+            partsOfSpeech.add(Pair.of(words.get(i), posTags.get(i)));
+
+        return partsOfSpeech;
     }
 
     public static List<String> tokenize(String text) {

@@ -274,7 +274,8 @@ public class SearchEngineService {
         int numThreads = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newCachedThreadPool();
 
-        int chunkSize = (int) Math.ceil((double) words.size() / numThreads);
+        double taskThreadsRatio = 1d;     // taskThreadsRatio: (num tasks / num available threads)
+        int chunkSize = (int) Math.ceil((double) words.size() / numThreads / taskThreadsRatio);
         List<List<Word>> wordsChunks = Lists.partition(words, chunkSize);
         for (List<Word> chunk : wordsChunks)
             executorService.submit(new UpdateTermWeightsByWords(chunk));

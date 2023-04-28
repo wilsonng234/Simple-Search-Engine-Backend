@@ -6,13 +6,18 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "posting")
-@CompoundIndex(def = "{'type': 1, 'wordId': 1, 'docId': 1}", unique = true)
+@CompoundIndexes({
+        @CompoundIndex(def = "{'type': 1, 'wordId': 1}"),
+        @CompoundIndex(def = "{'type': 1, 'wordId': 1, 'docId': 1}", unique = true)
+})
+
 public class Posting {
     @Id
     private String postingId;

@@ -100,27 +100,31 @@ public class CrawlerService {
         }
 
         private List<String> getTitleWords() {
-            List<String> words = NLPUtils.tokenize(document.head().text());
-            words = NLPUtils.removeStopWords(words);
-            words = NLPUtils.removePunctuations(words);
-            words = NLPUtils.stemWords(words);
+            List<Pair<String, String>> wordPosPairs = NLPUtils.partsOfSpeech(document.head().text());
+            wordPosPairs = NLPUtils.removePunctuationsWordPosPairs(wordPosPairs, true);
+            wordPosPairs = NLPUtils.stemWordPosPairs(wordPosPairs);
 
-            List<String> oneGrams = new ArrayList<>(words);
-            for (int numGrams = 2; numGrams <= 3; numGrams++)
-                words.addAll(NLPUtils.nGrams(oneGrams, numGrams));
+            List<String> words = new ArrayList<>(
+                    NLPUtils.removeStopWordPosPairs(wordPosPairs)
+                            .stream().map(Pair::getFirst).toList()
+            );
+            words.addAll(NLPUtils.biGramWordPosPairs(wordPosPairs));
+            words.addAll(NLPUtils.triGramWordPosPairs(wordPosPairs));
 
             return words;
         }
 
         private List<String> getBodyWords() {
-            List<String> words = NLPUtils.tokenize(document.body().text());
-            words = NLPUtils.removeStopWords(words);
-            words = NLPUtils.removePunctuations(words);
-            words = NLPUtils.stemWords(words);
+            List<Pair<String, String>> wordPosPairs = NLPUtils.partsOfSpeech(document.body().text());
+            wordPosPairs = NLPUtils.removePunctuationsWordPosPairs(wordPosPairs, true);
+            wordPosPairs = NLPUtils.stemWordPosPairs(wordPosPairs);
 
-            List<String> oneGrams = new ArrayList<>(words);
-            for (int numGrams = 2; numGrams <= 3; numGrams++)
-                words.addAll(NLPUtils.nGrams(oneGrams, numGrams));
+            List<String> words = new ArrayList<>(
+                    NLPUtils.removeStopWordPosPairs(wordPosPairs)
+                            .stream().map(Pair::getFirst).toList()
+            );
+            words.addAll(NLPUtils.biGramWordPosPairs(wordPosPairs));
+            words.addAll(NLPUtils.triGramWordPosPairs(wordPosPairs));
 
             return words;
         }

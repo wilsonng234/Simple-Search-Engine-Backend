@@ -1,8 +1,11 @@
 package com.github.wilsonng234.simplesearchengine.backend.util;
 
 import ca.rmen.porterstemmer.PorterStemmer;
+import edu.stanford.nlp.simple.Document;
+import edu.stanford.nlp.simple.Sentence;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,6 +21,9 @@ public abstract class NLPUtils {
     private static final PorterStemmer porterStemmer = new PorterStemmer();
     private static ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(StringBuilder::new);
 
+    private static final Set<List<String>> biGramGrammaticalPatterns;
+    private static final Set<List<String>> triGramGrammaticalPatterns;
+
     static {
         try {
             FileReader fileReader = new FileReader(RESOURCE_PATH + File.separator + "static" + File.separator + "stopwords.txt");
@@ -25,12 +31,57 @@ public abstract class NLPUtils {
 
             String stopWord = bufferedReader.readLine();
             while (stopWord != null) {
-                stopWords.add(stopWord.toLowerCase());
+                stopWords.add(porterStemmer.stemWord(stopWord));
                 stopWord = bufferedReader.readLine();
             }
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+
+        // JJ: adjective
+        // NN: noun
+        // IN: preposition or subordinating conjunction
+        biGramGrammaticalPatterns = new HashSet<>();
+        biGramGrammaticalPatterns.add(Arrays.asList("JJ", "NN"));
+        biGramGrammaticalPatterns.add(Arrays.asList("NN", "NN"));
+
+        triGramGrammaticalPatterns = new HashSet<>();
+        triGramGrammaticalPatterns.add(Arrays.asList("JJ", "JJ", "NN"));
+        triGramGrammaticalPatterns.add(Arrays.asList("JJ", "NN", "NN"));
+        triGramGrammaticalPatterns.add(Arrays.asList("NN", "JJ", "NN"));
+        triGramGrammaticalPatterns.add(Arrays.asList("NN", "NN", "NN"));
+        triGramGrammaticalPatterns.add(Arrays.asList("NN", "IN", "NN"));
+    }
+
+    public static List<Pair<String, String>> partsOfSpeech(String text) {
+        Document document = new Document(text + "?");
+        List<Sentence> sentences = document.sentences();
+        List<String> words = sentences.stream()
+                .flatMap(sentence -> sentence.words().stream())
+                .collect(Collectors.toCollection(ArrayList::new));
+        List<String> posTags = sentences.stream()
+                .flatMap(sentence -> sentence.posTags().stream())
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (words.size() != posTags.size()) {
+            logger.warn("Words and POS tags size mismatch");
+
+            if (words.size() < posTags.size()) {
+                while (words.size() < posTags.size()) {
+                    words.add("?");
+                }
+            } else {
+                while (posTags.size() < words.size()) {
+                    posTags.add(".");
+                }
+            }
+        }
+
+        List<Pair<String, String>> partsOfSpeech = new LinkedList<>();
+        for (int i = 0; i < words.size(); i++)
+            partsOfSpeech.add(Pair.of(words.get(i), posTags.get(i)));
+
+        return partsOfSpeech;
     }
 
     public static List<String> tokenize(String text) {
@@ -50,14 +101,38 @@ public abstract class NLPUtils {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    public static List<String> removePunctuations(List<String> words) {
+    public static List<Pair<String, String>> removeStopWordPosPairs(List<Pair<String, String>> wordPosPairs) {
+        return wordPosPairs.stream()
+                .filter(wordPos -> !stopWords.contains(wordPos.getFirst().toLowerCase()))
+                .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    public static List<String> removePunctuations(List<String> words, boolean removeDoubleQuotationMarks) {
         List<String> result = new LinkedList<>();
 
+        String regex = removeDoubleQuotationMarks ? "[^a-zA-Z0-9]" : "[^a-zA-Z0-9\"]";
         for (String word : words) {
-            String punctuationRemovedWord = word.replaceAll("[^a-zA-Z0-9]", "");
+            String punctuationRemovedWord = word.replaceAll(regex, "");
 
             if (!punctuationRemovedWord.isEmpty())
                 result.add(punctuationRemovedWord);
+        }
+
+        return result;
+    }
+
+    public static List<Pair<String, String>> removePunctuationsWordPosPairs(List<Pair<String, String>> wordPosPairs,
+                                                                            boolean removeDoubleQuotationMarks) {
+        List<Pair<String, String>> result = new LinkedList<>();
+
+        String regex = removeDoubleQuotationMarks ? "[^a-zA-Z0-9]" : "[^a-zA-Z0-9\"]";
+        for (Pair<String, String> wordPosPair : wordPosPairs) {
+            String word = wordPosPair.getFirst();
+            String pos = wordPosPair.getSecond();
+            String punctuationRemovedWord = word.replaceAll(regex, "");
+
+            if (!punctuationRemovedWord.isEmpty())
+                result.add(Pair.of(punctuationRemovedWord, pos));
         }
 
         return result;
@@ -71,6 +146,20 @@ public abstract class NLPUtils {
         return words.stream()
                 .map(porterStemmer::stemWord)
                 .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    public static List<Pair<String, String>> stemWordPosPairs(List<Pair<String, String>> wordPosPairs) {
+        List<Pair<String, String>> result = new LinkedList<>();
+
+        for (Pair<String, String> wordPosPair : wordPosPairs) {
+            String word = wordPosPair.getFirst();
+            String pos = wordPosPair.getSecond();
+            String stemmedWord = porterStemmer.stemWord(word);
+
+            result.add(Pair.of(stemmedWord, pos));
+        }
+
+        return result;
     }
 
     public static List<String> nGrams(List<String> words, int n) {
@@ -91,6 +180,58 @@ public abstract class NLPUtils {
         }
 
         return nGrams;
+    }
+
+    public static List<String> biGramWordPosPairs(List<Pair<String, String>> wordPosPairs) {
+        List<String> biGrams = new LinkedList<>();
+
+        StringBuilder stringBuilder = stringBuilderThreadLocal.get();
+        for (int i = 0; i < wordPosPairs.size() - 1; i++) {
+            String firstWord = wordPosPairs.get(i).getFirst();
+            String firstPos = wordPosPairs.get(i).getSecond();
+            String secondWord = wordPosPairs.get(i + 1).getFirst();
+            String secondPos = wordPosPairs.get(i + 1).getSecond();
+
+            List<String> posTags = Arrays.asList(firstPos, secondPos);
+            if (biGramGrammaticalPatterns.contains(posTags)) {
+                stringBuilder.append(firstWord);
+                stringBuilder.append(" ");
+                stringBuilder.append(secondWord);
+
+                biGrams.add(stringBuilder.toString());
+                stringBuilder.setLength(0);
+            }
+        }
+
+        return biGrams;
+    }
+
+    public static List<String> triGramWordPosPairs(List<Pair<String, String>> wordPosPairs) {
+        List<String> triGrams = new LinkedList<>();
+
+        StringBuilder stringBuilder = stringBuilderThreadLocal.get();
+        for (int i = 0; i < wordPosPairs.size() - 2; i++) {
+            String firstWord = wordPosPairs.get(i).getFirst();
+            String firstPos = wordPosPairs.get(i).getSecond();
+            String secondWord = wordPosPairs.get(i + 1).getFirst();
+            String secondPos = wordPosPairs.get(i + 1).getSecond();
+            String thirdWord = wordPosPairs.get(i + 2).getFirst();
+            String thirdPos = wordPosPairs.get(i + 2).getSecond();
+
+            List<String> posTags = Arrays.asList(firstPos, secondPos, thirdPos);
+            if (triGramGrammaticalPatterns.contains(posTags)) {
+                stringBuilder.append(firstWord);
+                stringBuilder.append(" ");
+                stringBuilder.append(secondWord);
+                stringBuilder.append(" ");
+                stringBuilder.append(thirdWord);
+
+                triGrams.add(stringBuilder.toString());
+                stringBuilder.setLength(0);
+            }
+        }
+
+        return triGrams;
     }
 
     public static List<String> parsePhraseSearchQuery(String query) {

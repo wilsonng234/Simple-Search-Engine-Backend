@@ -13,19 +13,12 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @Scope("prototype")
 public class PostingService {
     private static final Logger logger = LogManager.getLogger(PostingService.class);
     @Autowired
     private MongoTemplate mongoTemplate;
-
-    public Optional<Posting> getPosting(String postingId) {
-        return mongoTemplate.find(Query.query(Criteria.where("postingId").is(postingId)), Posting.class)
-                .stream().findFirst();
-    }
 
     public Posting putPosting(Posting posting) {
         Query query = new Query(

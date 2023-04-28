@@ -27,8 +27,6 @@ public class TitlePostingListService extends PostingListService {
     private TitlePostingListRepository titlePostingListRepository;
     @Autowired
     private MongoTemplate mongoTemplate;
-    @Autowired
-    private PostingService postingService;
 
     @Override
     public List<? extends PostingList> allPostingLists() {
@@ -42,10 +40,6 @@ public class TitlePostingListService extends PostingListService {
 
     @Override
     public TitlePostingList putPositingList(String wordId, Posting posting) {
-        String postingId = posting.getPostingId();
-        if (postingId == null)
-            postingId = postingService.putPosting(posting).getPostingId();
-
         Query query = new Query(Criteria.where("wordId").is(wordId));
         Update update = new Update().max("maxTF", posting.getTf());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);

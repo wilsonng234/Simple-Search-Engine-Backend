@@ -27,7 +27,7 @@ import java.util.*;
 @Scope("prototype")
 public class CrawlerService {
     private static final Logger logger = LogManager.getLogger(CrawlerService.class);
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
     {
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -187,84 +187,6 @@ public class CrawlerService {
             }
 
             return childrenLinks;
-        }
-
-        private Map<String, List<Long>> getTitleWordPositions() {
-            List<String> words = NLPUtils.tokenize(document.head().text());
-            words = NLPUtils.removeStopWords(words);
-            words = NLPUtils.stemWords(words);
-
-            Map<String, List<Long>> wordPositions = new HashMap<>();
-            for (int i = 0; i < words.size(); i++) {
-                String word = words.get(i);
-                if (!wordPositions.containsKey(word))
-                    wordPositions.put(word, new LinkedList<>());
-                wordPositions.get(word).add((long) i);
-            }
-
-            List<String> biGrams = NLPUtils.nGrams(words, 2);
-            List<String> triGrams = NLPUtils.nGrams(words, 3);
-
-            // add biGrams
-            for (int i = 0; i < biGrams.size(); i++) {
-                String biGram = biGrams.get(i);
-                if (!wordPositions.containsKey(biGram))
-                    wordPositions.put(biGram, new LinkedList<>());
-                wordPositions.get(biGram).add((long) i);
-            }
-
-            // add triGrams
-            for (int i = 0; i < triGrams.size(); i++) {
-                String triGram = triGrams.get(i);
-                if (!wordPositions.containsKey(triGram))
-                    wordPositions.put(triGram, new LinkedList<>());
-                wordPositions.get(triGram).add((long) i);
-            }
-
-            return wordPositions;
-        }
-
-        private Map<String, List<Long>> getBodyWordPositions() {
-            List<String> words = NLPUtils.tokenize(document.body().text());
-            words = NLPUtils.removeStopWords(words);
-            words = NLPUtils.stemWords(words);
-
-            Map<String, List<Long>> wordPositions = new HashMap<>();
-            for (int i = 0; i < words.size(); i++) {
-                String word = words.get(i);
-                if (!wordPositions.containsKey(word))
-                    wordPositions.put(word, new LinkedList<>());
-                wordPositions.get(word).add((long) i);
-            }
-
-            List<String> biGrams = NLPUtils.nGrams(words, 2);
-            List<String> triGrams = NLPUtils.nGrams(words, 3);
-
-            // add biGrams
-            for (int i = 0; i < biGrams.size(); i++) {
-                String biGram = biGrams.get(i);
-                if (!wordPositions.containsKey(biGram))
-                    wordPositions.put(biGram, new LinkedList<>());
-                wordPositions.get(biGram).add((long) i);
-            }
-
-            // add triGrams
-            for (int i = 0; i < triGrams.size(); i++) {
-                String triGram = triGrams.get(i);
-                if (!wordPositions.containsKey(triGram))
-                    wordPositions.put(triGram, new LinkedList<>());
-                wordPositions.get(triGram).add((long) i);
-            }
-
-//            for (String biGram : biGrams)
-//                if (biGram.split("\\s+").length != 2)
-//                    logger.warn("BiGram length != 2: " + biGram);
-//
-//            for (String triGram : triGrams)
-//                if (triGram.split("\\s+").length != 3)
-//                    logger.warn("TriGram length != 3: " + triGram);
-
-            return wordPositions;
         }
     }
 

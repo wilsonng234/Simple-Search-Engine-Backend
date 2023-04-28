@@ -30,8 +30,6 @@ public class SearchEngineService {
     @Autowired
     private DocumentService documentService;
     @Autowired
-    private PostingService postingService;
-    @Autowired
     private TitlePostingListService titlePostingListService;
     @Autowired
     private BodyPostingListService bodyPostingListService;

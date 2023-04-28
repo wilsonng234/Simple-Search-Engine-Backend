@@ -14,10 +14,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @Scope("prototype")
@@ -27,12 +24,6 @@ public class ParentLinkService {
     ParentLinkRepository parentLinkRepository;
     @Autowired
     MongoTemplate mongoTemplate;
-
-    public ParentLink createParentLinks(ParentLink parentLink) {
-        Set<String> parentLinks = parentLink.getParentUrls() == null ? new HashSet<>() : parentLink.getParentUrls();
-
-        return parentLinkRepository.insert(new ParentLink(parentLink.getUrl(), parentLinks));
-    }
 
     public ParentLink putParentLinks(ParentLink parentLink) {
         Query query = new Query(Criteria.where("url").is(parentLink.getUrl()));
@@ -51,9 +42,5 @@ public class ParentLinkService {
 
     public Optional<ParentLink> getParentLinks(String url) {
         return parentLinkRepository.findParentLinkByUrl(url);
-    }
-
-    public List<ParentLink> allParentLinks() {
-        return parentLinkRepository.findAll();
     }
 }

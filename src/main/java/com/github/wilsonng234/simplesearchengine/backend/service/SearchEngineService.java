@@ -164,7 +164,7 @@ public class SearchEngineService {
 
         int i = 0;
         documentsMap = new HashMap<>();
-        scoresVector = new ArrayList<>(documents.size());
+        scoresVector = Collections.synchronizedList(new ArrayList<>(documents.size()));
         for (Document document : documents) {
             documentsMap.put(document.getDocId(), i);
             scoresVector.add(0.0);
@@ -173,14 +173,14 @@ public class SearchEngineService {
 
         i = 0;
         wordsMap = new HashMap<>();
-        queryVector = new ArrayList<>(words.size());
+        queryVector = Collections.synchronizedList(new ArrayList<>(words.size()));
         for (Word word : words) {
             wordsMap.put(word.getWordId(), i);
             queryVector.add(0.0);
             i += 1;
         }
 
-        documentsVector = new ArrayList<>(documents.size());
+        documentsVector = Collections.synchronizedList(new ArrayList<>(documents.size()));
         for (i = 0; i < documents.size(); i++) {
             List<Double> documentVector = new ArrayList<>(words.size());
             for (int j = 0; j < words.size(); j++) {

@@ -23,7 +23,7 @@ public class PostingListService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public List<? extends PostingList> allPostingLists() {
+    public List<PostingList> allPostingLists() {
         return mongoTemplate.findAll(PostingList.class);
     }
 

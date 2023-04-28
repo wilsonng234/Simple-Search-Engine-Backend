@@ -28,7 +28,10 @@ public class PostingService {
     }
 
     public Posting putPosting(Posting posting) {
-        Query query = new Query(Criteria.where("docId").is(posting.getDocId()).and("wordId").is(posting.getWordId()));
+        Query query = new Query(
+                Criteria.where("type").is(posting.getType())
+                        .and("docId").is(posting.getDocId())
+                        .and("wordId").is(posting.getWordId()));
         Update update = new Update()
                 .set("wordPositions", posting.getWordPositions());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
@@ -43,8 +46,11 @@ public class PostingService {
         }
     }
 
-    public Posting putPosting(String wordId, String docId, List<Long> positions) {
-        Query query = new Query(Criteria.where("docId").is(docId).and("wordId").is(wordId));
+    public Posting putPosting(String wordId, String type, String docId, List<Long> positions) {
+        Query query = new Query(
+                Criteria.where("type").is(type)
+                        .and("docId").is(docId)
+                        .and("wordId").is(wordId));
         Update update = new Update()
                 .set("wordPositions", positions);
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);

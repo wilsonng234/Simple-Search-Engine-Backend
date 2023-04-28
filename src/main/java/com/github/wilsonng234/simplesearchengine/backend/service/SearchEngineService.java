@@ -272,8 +272,8 @@ public class SearchEngineService {
         }
 
         int numThreads = Runtime.getRuntime().availableProcessors();
-        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-        
+        ExecutorService executorService = Executors.newCachedThreadPool();
+
         int chunkSize = (int) Math.ceil((double) words.size() / numThreads);
         List<List<Word>> wordsChunks = Lists.partition(words, chunkSize);
         for (List<Word> chunk : wordsChunks)

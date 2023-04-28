@@ -40,9 +40,7 @@ public class CrawlerService {
     @Autowired
     private PostingService postingService;
     @Autowired
-    private TitlePostingListService titlePostingListService;
-    @Autowired
-    private BodyPostingListService bodyPostingListService;
+    private PostingListService postingListService;
     @Autowired
     private ParentLinkService parentLinkService;
 
@@ -249,17 +247,13 @@ public class CrawlerService {
             }
             Optional<Document> optionalDocument = documentService.getDocument(crawler.getUrl(), DocumentService.QueryType.URL);
 
-            boolean indexedDocument = false;
-            if (optionalDocument != null) {
-                indexedDocument = optionalDocument.isPresent();
-                if (indexedDocument) {
-                    Document document = optionalDocument.get();
-                    if (document.getLastModificationDate() == lastModificationDate) {
-                        // breadth-first search
-                        bfs(crawlers, crawledLinks, crawler.getChildrenLinks(), crawler.getUrl());
+            if (optionalDocument.isPresent()) {
+                Document document = optionalDocument.get();
+                if (document.getLastModificationDate() == lastModificationDate) {
+                    // breadth-first search
+                    bfs(crawlers, crawledLinks, crawler.getChildrenLinks(), crawler.getUrl());
 
-                        continue;
-                    }
+                    continue;
                 }
             }
 
@@ -306,7 +300,7 @@ public class CrawlerService {
                 }).getWordId();
 
                 Posting posting = postingService.putPosting(wordId, "title", docId, tf);
-                titlePostingListService.putPostingList(wordId, posting);
+                postingListService.putPostingList(wordId, "title", posting);
             }
 
             for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
@@ -319,7 +313,7 @@ public class CrawlerService {
                 }).getWordId();
 
                 Posting posting = postingService.putPosting(wordId, "body", docId, tf);
-                bodyPostingListService.putPostingList(wordId, posting);
+                postingListService.putPostingList(wordId, "body", posting);
             }
 
             // breadth-first search

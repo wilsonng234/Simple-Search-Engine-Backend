@@ -103,6 +103,21 @@ public abstract class NLPUtils {
         return result;
     }
 
+    public static List<Pair<String, String>> removePunctuationsWordPosPairs(List<Pair<String, String>> wordPosPairs) {
+        List<Pair<String, String>> result = new LinkedList<>();
+
+        for (Pair<String, String> wordPosPair : wordPosPairs) {
+            String word = wordPosPair.getFirst();
+            String pos = wordPosPair.getSecond();
+            String punctuationRemovedWord = word.replaceAll("[^a-zA-Z0-9]", "");
+
+            if (!punctuationRemovedWord.isEmpty())
+                result.add(Pair.of(punctuationRemovedWord, pos));
+        }
+
+        return result;
+    }
+
     public static String stemWord(String word) {
         return porterStemmer.stemWord(word);
     }

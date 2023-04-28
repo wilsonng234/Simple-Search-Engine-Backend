@@ -4,9 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
-
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -14,12 +11,9 @@ import java.util.List;
 public abstract class PostingList {
     @Id
     private String wordId;
-    @DocumentReference
-    private List<Posting> postings;
     private int maxTF = 0;
 
-    public PostingList(String wordId, List<Posting> postings) {
+    public PostingList(String wordId) {
         this.wordId = wordId;
-        this.postings = postings;
     }
 }

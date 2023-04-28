@@ -11,6 +11,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +35,8 @@ public class SearchEngineService {
     private TitlePostingListService titlePostingListService;
     @Autowired
     private BodyPostingListService bodyPostingListService;
+    @Autowired
+    private MongoTemplate mongoTemplate;
     private List<Word> words;
     private List<Document> documents;
     private List<List<Double>> documentsVector;     // index1: docId, index2: wordID, value: termWeight
@@ -191,7 +196,7 @@ public class SearchEngineService {
     }
 
     private void setUpDocumentsVector() {
-        /**
+        /*
          * TODO: Create TitlePosting and BodyPosting classes for quicker access to postings
          *             List<Posting> titlePostings = mongoTemplate.find(
          *                     Query.query(Criteria.where("wordId").is(wordId)),
@@ -220,13 +225,22 @@ public class SearchEngineService {
             long temp1 = System.currentTimeMillis();
             TitlePostingList titlePostingList = titlePostingListService.getPostingList(wordId);
             BodyPostingList bodyPostingList = bodyPostingListService.getPostingList(wordId);
+
+            List<Posting> titlePostings = mongoTemplate.find(
+                    Query.query(Criteria.where("wordId").is(wordId).and("type").is("title")),
+                    Posting.class
+            );
+            List<Posting> bodyPostings = mongoTemplate.find(
+                    Query.query(Criteria.where("wordId").is(wordId).and("type").is("body")),
+                    Posting.class
+            );
             int titleMaxTF = titlePostingList.getMaxTF();
-            int titleDocFreq = titlePostingList.getPostings().size();
+            int titleDocFreq = titlePostings.size();
             int bodyMaxTF = bodyPostingList.getMaxTF();
-            int bodyDocFreq = bodyPostingList.getPostings().size();
+            int bodyDocFreq = bodyPostings.size();
             sumOfTimeForPostingList += System.currentTimeMillis() - temp1;
 
-            for (Posting posting : titlePostingList.getPostings()) {
+            for (Posting posting : titlePostings) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
                 if (docIndex == null) {
@@ -244,7 +258,7 @@ public class SearchEngineService {
                 sumOfTimeForTermWeight += System.currentTimeMillis() - temp;
             }
 
-            for (Posting posting : bodyPostingList.getPostings()) {
+            for (Posting posting : bodyPostings) {
                 String docId = posting.getDocId();
                 Integer docIndex = documentsMap.get(docId);
                 if (docIndex == null) {

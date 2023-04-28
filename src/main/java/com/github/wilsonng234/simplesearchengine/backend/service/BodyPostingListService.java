@@ -16,7 +16,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +37,7 @@ public class BodyPostingListService extends PostingListService {
 
     @Override
     public BodyPostingList createPostingList(String wordId) {
-        return bodyPostingListRepository.insert(new BodyPostingList(wordId, new LinkedList<>()));
+        return bodyPostingListRepository.insert(new BodyPostingList(wordId));
     }
 
     @Override
@@ -48,7 +47,7 @@ public class BodyPostingListService extends PostingListService {
             postingId = postingService.putPosting(posting).getPostingId();
 
         Query query = new Query(Criteria.where("wordId").is(wordId));
-        Update update = new Update().addToSet("postings", posting).max("maxTF", posting.getWordPositions().size());
+        Update update = new Update().max("maxTF", posting.getWordPositions().size());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<BodyPostingList> cls = BodyPostingList.class;
 

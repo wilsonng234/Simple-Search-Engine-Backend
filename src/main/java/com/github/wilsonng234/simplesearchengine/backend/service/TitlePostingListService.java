@@ -16,7 +16,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +37,7 @@ public class TitlePostingListService extends PostingListService {
 
     @Override
     public TitlePostingList createPostingList(String wordId) {
-        return titlePostingListRepository.insert(new TitlePostingList(wordId, new LinkedList<>()));
+        return titlePostingListRepository.insert(new TitlePostingList(wordId));
     }
 
     @Override
@@ -48,7 +47,7 @@ public class TitlePostingListService extends PostingListService {
             postingId = postingService.putPosting(posting).getPostingId();
 
         Query query = new Query(Criteria.where("wordId").is(wordId));
-        Update update = new Update().addToSet("postings", posting).max("maxTF", posting.getWordPositions().size());
+        Update update = new Update().max("maxTF", posting.getWordPositions().size());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<TitlePostingList> cls = TitlePostingList.class;
 

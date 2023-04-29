@@ -93,25 +93,8 @@ public class SearchEngineService {
 
     private void setUpQueryVector(String query) {
         List<String> normalWords = NLPUtils.tokenize(query);
-        normalWords = NLPUtils.removePunctuations(normalWords, false);
-        normalWords = normalWords.stream().map(
-                normalWord -> {
-                    if (normalWord.equals("\""))
-                        return normalWord;
-
-                    boolean startWithQuote = normalWord.startsWith("\"");
-                    boolean endWithQuote = normalWord.endsWith("\"");
-
-                    if (startWithQuote)
-                        normalWord = normalWord.substring(1);
-                    if (endWithQuote)
-                        normalWord = normalWord.substring(0, normalWord.length() - 1);
-
-                    normalWord = NLPUtils.stemWord(normalWord);
-
-                    return normalWord;
-                }
-        ).collect(Collectors.toCollection(LinkedList::new));
+        normalWords = NLPUtils.removePunctuations(normalWords, true);
+        normalWords = NLPUtils.stemWords(normalWords);
         normalWords = NLPUtils.removeStopWords(normalWords);
 
         for (String normalWord : normalWords) {
@@ -126,12 +109,12 @@ public class SearchEngineService {
         }
 
         List<String> phraseWords = NLPUtils.parsePhraseSearchQuery(query);
-
         phraseWords = phraseWords.stream().map(
                 words -> {
                     List<String> wordsList = NLPUtils.tokenize(words);
-                    wordsList = NLPUtils.removeStopWords(wordsList);
+                    wordsList = NLPUtils.removePunctuations(wordsList, true);
                     wordsList = NLPUtils.stemWords(wordsList);
+                    wordsList = NLPUtils.removeStopWords(wordsList);
 
                     return String.join(" ", wordsList);
                 }

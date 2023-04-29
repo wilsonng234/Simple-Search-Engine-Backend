@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -30,11 +29,6 @@ public class WordController {
             return new ResponseEntity<>(wordService.getWord(wordId.get(), WordService.QueryType.WORDID), HttpStatus.OK);
         else
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<List<Word>> getAllWords() {
-        return new ResponseEntity<>(wordService.allWords(), HttpStatus.OK);
     }
 
     @PutMapping

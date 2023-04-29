@@ -27,9 +27,4 @@ public class ParentLinkController {
         else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
-    @PutMapping
-    public ResponseEntity<ParentLink> putParentLink(@RequestBody ParentLink parentLink) {
-        return new ResponseEntity<>(parentLinkService.putParentLinks(parentLink), HttpStatus.OK);
-    }
 }

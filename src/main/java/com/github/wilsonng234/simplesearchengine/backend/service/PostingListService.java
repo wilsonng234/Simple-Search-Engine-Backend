@@ -14,18 +14,12 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @Scope("prototype")
 public class PostingListService {
     private static final Logger logger = LogManager.getLogger(PostingListService.class);
     @Autowired
     private MongoTemplate mongoTemplate;
-
-    public List<PostingList> allPostingLists() {
-        return mongoTemplate.findAll(PostingList.class);
-    }
 
     public PostingList putPostingList(String wordId, String type, Posting posting) {
         Query query = new Query(

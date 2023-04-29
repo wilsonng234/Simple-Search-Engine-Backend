@@ -19,20 +19,20 @@ public class WordController {
     private WordService wordService;
 
     @GetMapping
-    public ResponseEntity<Optional<Word>> getWord(@RequestParam Optional<String> word, @RequestParam Optional<String> wordId) {
+    public ResponseEntity<Optional<Word>> getWord(@RequestParam Optional<String> wordId, @RequestParam Optional<String> word) {
         if (word.isPresent() && wordId.isPresent())
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        if (word.isPresent())
-            return new ResponseEntity<>(wordService.getWord(word.get(), WordService.QueryType.WORD), HttpStatus.OK);
-        else if (wordId.isPresent())
+        if (wordId.isPresent())
             return new ResponseEntity<>(wordService.getWord(wordId.get(), WordService.QueryType.WORDID), HttpStatus.OK);
+        else if (word.isPresent())
+            return new ResponseEntity<>(wordService.getWord(word.get(), WordService.QueryType.WORD), HttpStatus.OK);
         else
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PutMapping
     public ResponseEntity<Word> putWord(@RequestBody Word word) {
-        return new ResponseEntity<>(wordService.putWord(word.getWord()), HttpStatus.CREATED);
+        return new ResponseEntity<>(wordService.putWord(word.getWord()), HttpStatus.OK);
     }
 }

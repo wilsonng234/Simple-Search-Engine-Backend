@@ -19,15 +19,25 @@ public class WordController {
     private WordService wordService;
 
     @GetMapping
-    public ResponseEntity<Optional<Word>> getWord(@RequestParam Optional<String> wordId, @RequestParam Optional<String> word) {
-        if (word.isPresent() && wordId.isPresent())
+    public ResponseEntity<Word> getWord(@RequestParam Optional<String> wordId, @RequestParam Optional<String> word) {
+        if (wordId.isPresent() && word.isPresent())
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        if (wordId.isPresent())
-            return new ResponseEntity<>(wordService.getWord(wordId.get(), WordService.QueryType.WORDID), HttpStatus.OK);
-        else if (word.isPresent())
-            return new ResponseEntity<>(wordService.getWord(word.get(), WordService.QueryType.WORD), HttpStatus.OK);
-        else
+        if (wordId.isPresent()) {
+            Optional<Word> wordObj = wordService.getWord(wordId.get(), WordService.QueryType.WORDID);
+
+            if (wordObj.isPresent())
+                return new ResponseEntity<>(wordObj.get(), HttpStatus.OK);
+            else
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else if (word.isPresent()) {
+            Optional<Word> wordObj = wordService.getWord(word.get(), WordService.QueryType.WORD);
+
+            if (wordObj.isPresent())
+                return new ResponseEntity<>(wordObj.get(), HttpStatus.OK);
+            else
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 

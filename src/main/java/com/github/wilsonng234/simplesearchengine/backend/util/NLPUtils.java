@@ -110,7 +110,8 @@ public abstract class NLPUtils {
     public static List<String> removePunctuations(List<String> words, boolean removeDoubleQuotationMarks) {
         List<String> result = new LinkedList<>();
 
-        String regex = removeDoubleQuotationMarks ? "[^a-zA-Z0-9]" : "[^a-zA-Z0-9\"]";
+        String regex = removeDoubleQuotationMarks ? "^[^a-zA-Z0-9]*|[^a-zA-Z0-9]*$"
+                : "^[^a-zA-Z0-9\"]*|[^a-zA-Z0-9\"]*$";
         for (String word : words) {
             String punctuationRemovedWord = word.replaceAll(regex, "");
 
@@ -125,7 +126,8 @@ public abstract class NLPUtils {
                                                                             boolean removeDoubleQuotationMarks) {
         List<Pair<String, String>> result = new LinkedList<>();
 
-        String regex = removeDoubleQuotationMarks ? "[^a-zA-Z0-9]" : "[^a-zA-Z0-9\"]";
+        String regex = removeDoubleQuotationMarks ? "^[^a-zA-Z0-9]*|[^a-zA-Z0-9]*$"
+                : "^[^a-zA-Z0-9\"]*|[^a-zA-Z0-9\"]*$";
         for (Pair<String, String> wordPosPair : wordPosPairs) {
             String word = wordPosPair.getFirst();
             String pos = wordPosPair.getSecond();

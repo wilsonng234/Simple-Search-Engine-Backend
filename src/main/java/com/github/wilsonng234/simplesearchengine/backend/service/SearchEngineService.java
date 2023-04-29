@@ -1,6 +1,9 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
-import com.github.wilsonng234.simplesearchengine.backend.model.*;
+import com.github.wilsonng234.simplesearchengine.backend.model.Document;
+import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
+import com.github.wilsonng234.simplesearchengine.backend.model.PostingList;
+import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.SearchEngineUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.VSMUtils;
@@ -19,9 +22,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -93,25 +94,8 @@ public class SearchEngineService {
 
     private void setUpQueryVector(String query) {
         List<String> normalWords = NLPUtils.tokenize(query);
-        normalWords = NLPUtils.removePunctuations(normalWords, false);
-        normalWords = normalWords.stream().map(
-                normalWord -> {
-                    if (normalWord.equals("\""))
-                        return normalWord;
-
-                    boolean startWithQuote = normalWord.startsWith("\"");
-                    boolean endWithQuote = normalWord.endsWith("\"");
-
-                    if (startWithQuote)
-                        normalWord = normalWord.substring(1);
-                    if (endWithQuote)
-                        normalWord = normalWord.substring(0, normalWord.length() - 1);
-
-                    normalWord = NLPUtils.stemWord(normalWord);
-
-                    return normalWord;
-                }
-        ).collect(Collectors.toCollection(LinkedList::new));
+        normalWords = NLPUtils.removePunctuations(normalWords, true);
+        normalWords = NLPUtils.stemWords(normalWords);
         normalWords = NLPUtils.removeStopWords(normalWords);
 
         for (String normalWord : normalWords) {
@@ -126,11 +110,10 @@ public class SearchEngineService {
         }
 
         List<String> phraseWords = NLPUtils.parsePhraseSearchQuery(query);
-
         phraseWords = phraseWords.stream().map(
                 words -> {
                     List<String> wordsList = NLPUtils.tokenize(words);
-                    wordsList = NLPUtils.removeStopWords(wordsList);
+                    wordsList = NLPUtils.removePunctuations(wordsList, true);
                     wordsList = NLPUtils.stemWords(wordsList);
 
                     return String.join(" ", wordsList);
@@ -149,6 +132,9 @@ public class SearchEngineService {
                 }
             }
         }
+
+        System.out.println("normalWords: " + normalWords);
+        System.out.println("phraseWords: " + phraseWords);
     }
 
     private void setUpScoresVector() {
@@ -233,38 +219,42 @@ public class SearchEngineService {
                             Posting.class
                     );
 
-                    int titleMaxTF = titlePostingList.getMaxTF();
-                    int titleDocFreq = titlePostings.size();
-                    for (Posting posting : titlePostings) {
-                        String docId = posting.getDocId();
-                        Integer docIndex = documentsMap.get(docId);
-                        if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
-                            continue;
+                    if (titlePostingList != null) {
+                        int titleMaxTF = titlePostingList.getMaxTF();
+                        int titleDocFreq = titlePostings.size();
+                        for (Posting posting : titlePostings) {
+                            String docId = posting.getDocId();
+                            Integer docIndex = documentsMap.get(docId);
+                            if (docIndex == null) {
+                                logger.error("Doc index is null" + docId);
+                                continue;
+                            }
+
+                            int tf = posting.getTf();
+
+                            double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
+                            double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
+                            documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                         }
-
-                        int tf = posting.getTf();
-
-                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
-                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                     }
 
-                    int bodyMaxTF = bodyPostingList.getMaxTF();
-                    int bodyDocFreq = bodyPostings.size();
-                    for (Posting posting : bodyPostings) {
-                        String docId = posting.getDocId();
-                        Integer docIndex = documentsMap.get(docId);
-                        if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
-                            continue;
+                    if (bodyPostingList != null) {
+                        int bodyMaxTF = bodyPostingList.getMaxTF();
+                        int bodyDocFreq = bodyPostings.size();
+                        for (Posting posting : bodyPostings) {
+                            String docId = posting.getDocId();
+                            Integer docIndex = documentsMap.get(docId);
+                            if (docIndex == null) {
+                                logger.error("Doc index is null" + docId);
+                                continue;
+                            }
+
+                            int tf = posting.getTf();
+
+                            double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
+                            double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, bodyDocFreq, bodyMaxTF);
+                            documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                         }
-
-                        int tf = posting.getTf();
-
-                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, bodyDocFreq, bodyMaxTF);
-                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                     }
                 }
             }
@@ -276,8 +266,9 @@ public class SearchEngineService {
         double taskThreadsRatio = 1d;     // taskThreadsRatio: (num tasks / num available threads)
         int chunkSize = (int) Math.ceil((double) words.size() / numThreads / taskThreadsRatio);
         List<List<Word>> wordsChunks = Lists.partition(words, chunkSize);
+        List<Future<?>> futures = new ArrayList<>(wordsChunks.size());
         for (List<Word> chunk : wordsChunks)
-            executorService.submit(new UpdateTermWeightsByWords(chunk));
+            futures.add(executorService.submit(new UpdateTermWeightsByWords(chunk)));
 
         executorService.shutdown();     // stop accepting new tasks
         try {
@@ -285,7 +276,17 @@ public class SearchEngineService {
                 executorService.shutdownNow();
             }
         } catch (InterruptedException ex) {
+            logger.error(ex.getMessage());
             executorService.shutdownNow();
+        }
+
+        // Handle tasks exceptions
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException ex) {
+                logger.error(ex.getMessage());
+            }
         }
     }
 }

@@ -3,6 +3,8 @@ package com.github.wilsonng234.simplesearchengine.backend.controller;
 import com.github.wilsonng234.simplesearchengine.backend.service.SearchEngineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +18,7 @@ public class SearchEngineController {
     SearchEngineService searchEngineService;
 
     @GetMapping
-    public List<SearchEngineService.QueryResult> search(@RequestParam String query) {
-        return searchEngineService.search(query);
+    public ResponseEntity<List<SearchEngineService.QueryResult>> search(@RequestParam String query) {
+        return new ResponseEntity<>(searchEngineService.search(query), HttpStatus.OK);
     }
 }

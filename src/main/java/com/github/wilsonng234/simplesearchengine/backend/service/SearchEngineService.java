@@ -114,7 +114,6 @@ public class SearchEngineService {
                     List<String> wordsList = NLPUtils.tokenize(words);
                     wordsList = NLPUtils.removePunctuations(wordsList, true);
                     wordsList = NLPUtils.stemWords(wordsList);
-                    wordsList = NLPUtils.removeStopWords(wordsList);
 
                     return String.join(" ", wordsList);
                 }
@@ -132,6 +131,9 @@ public class SearchEngineService {
                 }
             }
         }
+
+        System.out.println("normalWords: " + normalWords);
+        System.out.println("phraseWords: " + phraseWords);
     }
 
     private void setUpScoresVector() {

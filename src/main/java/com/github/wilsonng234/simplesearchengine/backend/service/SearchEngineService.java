@@ -22,9 +22,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -268,8 +266,9 @@ public class SearchEngineService {
         double taskThreadsRatio = 1d;     // taskThreadsRatio: (num tasks / num available threads)
         int chunkSize = (int) Math.ceil((double) words.size() / numThreads / taskThreadsRatio);
         List<List<Word>> wordsChunks = Lists.partition(words, chunkSize);
+        List<Future<?>> futures = new ArrayList<>(wordsChunks.size());
         for (List<Word> chunk : wordsChunks)
-            executorService.submit(new UpdateTermWeightsByWords(chunk));
+            futures.add(executorService.submit(new UpdateTermWeightsByWords(chunk)));
 
         executorService.shutdown();     // stop accepting new tasks
         try {
@@ -277,7 +276,17 @@ public class SearchEngineService {
                 executorService.shutdownNow();
             }
         } catch (InterruptedException ex) {
+            logger.error(ex.getMessage());
             executorService.shutdownNow();
+        }
+
+        // Handle tasks exceptions
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException ex) {
+                logger.error(ex.getMessage());
+            }
         }
     }
 }

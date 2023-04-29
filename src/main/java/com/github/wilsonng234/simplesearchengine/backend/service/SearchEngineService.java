@@ -1,6 +1,9 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
-import com.github.wilsonng234.simplesearchengine.backend.model.*;
+import com.github.wilsonng234.simplesearchengine.backend.model.Document;
+import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
+import com.github.wilsonng234.simplesearchengine.backend.model.PostingList;
+import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.SearchEngineUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.VSMUtils;
@@ -218,38 +221,42 @@ public class SearchEngineService {
                             Posting.class
                     );
 
-                    int titleMaxTF = titlePostingList.getMaxTF();
-                    int titleDocFreq = titlePostings.size();
-                    for (Posting posting : titlePostings) {
-                        String docId = posting.getDocId();
-                        Integer docIndex = documentsMap.get(docId);
-                        if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
-                            continue;
+                    if (titlePostingList != null) {
+                        int titleMaxTF = titlePostingList.getMaxTF();
+                        int titleDocFreq = titlePostings.size();
+                        for (Posting posting : titlePostings) {
+                            String docId = posting.getDocId();
+                            Integer docIndex = documentsMap.get(docId);
+                            if (docIndex == null) {
+                                logger.error("Doc index is null" + docId);
+                                continue;
+                            }
+
+                            int tf = posting.getTf();
+
+                            double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
+                            double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
+                            documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                         }
-
-                        int tf = posting.getTf();
-
-                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, titleMaxTF);
-                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                     }
 
-                    int bodyMaxTF = bodyPostingList.getMaxTF();
-                    int bodyDocFreq = bodyPostings.size();
-                    for (Posting posting : bodyPostings) {
-                        String docId = posting.getDocId();
-                        Integer docIndex = documentsMap.get(docId);
-                        if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
-                            continue;
+                    if (bodyPostingList != null) {
+                        int bodyMaxTF = bodyPostingList.getMaxTF();
+                        int bodyDocFreq = bodyPostings.size();
+                        for (Posting posting : bodyPostings) {
+                            String docId = posting.getDocId();
+                            Integer docIndex = documentsMap.get(docId);
+                            if (docIndex == null) {
+                                logger.error("Doc index is null" + docId);
+                                continue;
+                            }
+
+                            int tf = posting.getTf();
+
+                            double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
+                            double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, bodyDocFreq, bodyMaxTF);
+                            documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                         }
-
-                        int tf = posting.getTf();
-
-                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, bodyDocFreq, bodyMaxTF);
-                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                     }
                 }
             }

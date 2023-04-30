@@ -25,7 +25,7 @@ public class VSMUtils {
     }
 
     public static double getIDF(int numPages, int documentFrequency) {
-        return Math.log(numPages / (double) documentFrequency);
+        return Math.log(numPages / (double) documentFrequency) / Math.log(2);
     }
 
     public static double getTermWeight(int termFrequency, int numDocuments, int documentFrequency, int maxTermFrequency) {

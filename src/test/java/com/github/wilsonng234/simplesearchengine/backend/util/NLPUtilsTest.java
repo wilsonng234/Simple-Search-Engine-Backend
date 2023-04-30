@@ -11,6 +11,32 @@ class NLPUtilsTest {
 
     @Test
     void partsOfSpeech() {
+        String text = "This is a test sentence. " +
+                "This is another test sentence. " +
+                "They are sentences.";
+        List<Pair<String, String>> partsOfSpeech = NLPUtils.partsOfSpeech(text);
+
+        assertEquals(
+                List.of(
+                        Pair.of("This", "DT"),
+                        Pair.of("is", "VBZ"),
+                        Pair.of("a", "DT"),
+                        Pair.of("test", "NN"),
+                        Pair.of("sentence", "NN"),
+                        Pair.of(".", "."),
+                        Pair.of("This", "DT"),
+                        Pair.of("is", "VBZ"),
+                        Pair.of("another", "DT"),
+                        Pair.of("test", "NN"),
+                        Pair.of("sentence", "NN"),
+                        Pair.of(".", "."),
+                        Pair.of("They", "PRP"),
+                        Pair.of("are", "VBP"),
+                        Pair.of("sentences", "NNS"),
+                        Pair.of(".", ".")
+                ),
+                partsOfSpeech
+        );
     }
 
     @Test

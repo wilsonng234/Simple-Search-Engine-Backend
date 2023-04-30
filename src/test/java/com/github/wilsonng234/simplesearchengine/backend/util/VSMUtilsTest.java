@@ -31,7 +31,6 @@ class VSMUtilsTest {
         int numPages = 10;
         int documentFrequency = 3;
 
-        System.out.println(VSMUtils.getIDF(numPages, documentFrequency));
         Assertions.assertEquals(1.736965594, VSMUtils.getIDF(numPages, documentFrequency), DELTA);
     }
 

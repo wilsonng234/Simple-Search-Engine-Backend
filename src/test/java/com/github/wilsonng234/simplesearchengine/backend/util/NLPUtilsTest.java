@@ -11,7 +11,7 @@ class NLPUtilsTest {
 
     @Test
     void partsOfSpeech() {
-        String text = "This is a test sentence. " +
+        String text = "This is a test sentence.\n" +
                 "This is another test sentence. " +
                 "They are sentences.";
         List<Pair<String, String>> partsOfSpeech = NLPUtils.partsOfSpeech(text);
@@ -41,6 +41,22 @@ class NLPUtilsTest {
 
     @Test
     void tokenize() {
+        String text = "a set of words that is complete in itself,\n" +
+                "typically containing a subject and predicate, " +
+                "conveying a statement, question, exclamation\n" +
+                "or command, and consisting of a main clause and sometimes one or more subordinate clauses.";
+        List<String> tokens = NLPUtils.tokenize(text);
+
+        assertEquals(
+                List.of(
+                        "a", "set", "of", "words", "that", "is", "complete", "in", "itself,",
+                        "typically", "containing", "a", "subject", "and", "predicate,",
+                        "conveying", "a", "statement,", "question,", "exclamation",
+                        "or", "command,", "and", "consisting", "of", "a", "main", "clause",
+                        "and", "sometimes", "one", "or", "more", "subordinate", "clauses."
+                ),
+                tokens
+        );
     }
 
     @Test

@@ -54,7 +54,7 @@ public abstract class NLPUtils {
     }
 
     public static List<Pair<String, String>> partsOfSpeech(String text) {
-        Document document = new Document(text + "?");
+        Document document = new Document(text);
         List<Sentence> sentences = document.sentences();
         List<String> words = sentences.stream()
                 .flatMap(sentence -> sentence.words().stream())
@@ -62,23 +62,9 @@ public abstract class NLPUtils {
         List<String> posTags = sentences.stream()
                 .flatMap(sentence -> sentence.posTags().stream())
                 .collect(Collectors.toCollection(ArrayList::new));
-
-        if (words.size() != posTags.size()) {
-            logger.warn("Words and POS tags size mismatch");
-
-            if (words.size() < posTags.size()) {
-                while (words.size() < posTags.size()) {
-                    words.add("?");
-                }
-            } else {
-                while (posTags.size() < words.size()) {
-                    posTags.add(".");
-                }
-            }
-        }
-
+        
         List<Pair<String, String>> partsOfSpeech = new LinkedList<>();
-        for (int i = 0; i < words.size(); i++)
+        for (int i = 0; i < words.size() && i < posTags.size(); i++)
             partsOfSpeech.add(Pair.of(words.get(i), posTags.get(i)));
 
         return partsOfSpeech;

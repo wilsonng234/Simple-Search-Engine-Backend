@@ -3,8 +3,7 @@ package com.github.wilsonng234.simplesearchengine.backend.util;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.util.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -271,10 +270,68 @@ class NLPUtilsTest {
 
     @Test
     void biGramWordPosPairs() {
+        Set<List<String>> biGramGrammaticalPatterns = new HashSet<>();
+        biGramGrammaticalPatterns.add(Arrays.asList("JJ", "NN"));
+        biGramGrammaticalPatterns.add(Arrays.asList("NN", "NN"));
+
+        List<Pair<String, String>> wordPosPairs = List.of(
+                Pair.of("This", "DT"),
+                Pair.of("is", "VBZ"),
+                Pair.of("a", "DT"),
+                Pair.of("test", "NN"),
+                Pair.of("sentence", "NN"),
+                Pair.of("This", "DT"),
+                Pair.of("is", "VBZ"),
+                Pair.of("another", "JJ"),
+                Pair.of("test", "NN"),
+                Pair.of("sentence", "NN"),
+                Pair.of("They", "PRP"),
+                Pair.of("are", "VBP"),
+                Pair.of("sentences", "NNS")
+        );
+
+        List<String> biGramWordPosPairs = NLPUtils.biGramWordPosPairs(wordPosPairs);
+        assertEquals(
+                List.of(
+                        "test sentence", "another test", "test sentence"
+                ),
+                biGramWordPosPairs
+        );
     }
 
     @Test
     void triGramWordPosPairs() {
+        Set<List<String>> triGramGrammaticalPatterns = new HashSet<>();
+        triGramGrammaticalPatterns.add(Arrays.asList("JJ", "JJ", "NN"));
+        triGramGrammaticalPatterns.add(Arrays.asList("JJ", "NN", "NN"));
+        triGramGrammaticalPatterns.add(Arrays.asList("NN", "JJ", "NN"));
+        triGramGrammaticalPatterns.add(Arrays.asList("NN", "NN", "NN"));
+        triGramGrammaticalPatterns.add(Arrays.asList("NN", "IN", "NN"));
+
+        List<Pair<String, String>> wordPosPairs = List.of(
+                Pair.of("This", "JJ"),
+                Pair.of("is", "JJ"),
+                Pair.of("a", "NN"),
+                Pair.of("test", "NN"),
+                Pair.of("sentence", "JJ"),
+                Pair.of("This", "NN"),
+                Pair.of("is", "IN"),
+                Pair.of("another", "NN"),
+                Pair.of("test", "NN"),
+                Pair.of("sentence", "NN"),
+                Pair.of("They", "PRP"),
+                Pair.of("are", "VBP"),
+                Pair.of("sentences", "NNS")
+        );
+
+        List<String> triGramWordPosPairs = NLPUtils.triGramWordPosPairs(wordPosPairs);
+        assertEquals(
+                List.of(
+                        "This is a", "is a test", "test sentence This", "This is another",
+                        "another test sentence"
+                ),
+                triGramWordPosPairs
+        );
     }
 
     @Test

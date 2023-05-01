@@ -3,6 +3,7 @@ package com.github.wilsonng234.simplesearchengine.backend.util;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.util.Pair;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -146,6 +147,33 @@ class NLPUtilsTest {
 
     @Test
     void nGrams() {
+        String sentence = "Applicants for admission to the postgraduate programs are required to have  completed ";
+        List<String> words = List.of(sentence.split("\\s+"));
+        List<String> biGrams = NLPUtils.nGrams(words, 2);
+        List<String> triGrams = NLPUtils.nGrams(words, 3);
+
+        assertEquals(
+                List.of(
+                        "Applicants for", "for admission", "admission to", "to the", "the postgraduate",
+                        "postgraduate programs", "programs are", "are required", "required to", "to have",
+                        "have completed"
+                ),
+                biGrams
+        );
+
+        assertEquals(
+                List.of(
+                        "Applicants for admission", "for admission to", "admission to the", "to the postgraduate",
+                        "the postgraduate programs", "postgraduate programs are", "programs are required",
+                        "are required to", "required to have", "to have completed"
+                ),
+                triGrams
+        );
+
+        assertEquals(
+                new ArrayList<>(),
+                NLPUtils.nGrams(new ArrayList<>(), 2)
+        );
     }
 
     @Test

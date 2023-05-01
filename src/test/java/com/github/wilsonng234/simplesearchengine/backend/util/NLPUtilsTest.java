@@ -84,6 +84,30 @@ class NLPUtilsTest {
 
     @Test
     void removePunctuations() {
+        List<String> words = List.of(
+                "$!2324,$#@", "213$231", ":helloworld,", "!hello:world:2022,1,2,", "\"hello:world:2022,1,2",
+                "hello:world:2022,1,2\"", "\"hello:world:2022,1,2\"", "hello:world:2022,1,2"
+        );
+
+        boolean removeDoubleQuotationMarks = true;
+        List<String> removePunctuations = NLPUtils.removePunctuations(words, removeDoubleQuotationMarks);
+        assertEquals(
+                List.of(
+                        "2324", "213$231", "helloworld", "hello:world:2022,1,2", "hello:world:2022,1,2",
+                        "hello:world:2022,1,2", "hello:world:2022,1,2", "hello:world:2022,1,2"
+                ),
+                removePunctuations
+        );
+
+        removeDoubleQuotationMarks = false;
+        removePunctuations = NLPUtils.removePunctuations(words, removeDoubleQuotationMarks);
+        assertEquals(
+                List.of(
+                        "2324", "213$231", "helloworld", "hello:world:2022,1,2", "\"hello:world:2022,1,2",
+                        "hello:world:2022,1,2\"", "\"hello:world:2022,1,2\"", "hello:world:2022,1,2"
+                ),
+                removePunctuations
+        );
     }
 
     @Test

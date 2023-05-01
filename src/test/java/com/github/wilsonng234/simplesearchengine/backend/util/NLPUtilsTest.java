@@ -200,7 +200,7 @@ class NLPUtilsTest {
         try {
             // invalid query should not break the program
             query = "hello world \"this\" query\" is \" invalid\"";
-            phrases = NLPUtils.parsePhraseSearchQuery(query);
+            NLPUtils.parsePhraseSearchQuery(query);
         } catch (Exception e) {
             fail();
         }

@@ -82,6 +82,21 @@ class NLPUtilsTest {
 
     @Test
     void removeStopWordPosPairs() {
+        List<Pair<String, String>> wordPosPairs = List.of(
+                Pair.of("thi", "DT"), Pair.of("is", "VBZ"), Pair.of("a", "DT"), Pair.of("test", "NN"), Pair.of("sentenc", "NN"),
+                Pair.of("thi", "DT"), Pair.of("is", "VBZ"), Pair.of("anoth", "DT"), Pair.of("test", "NN"), Pair.of("sentenc", "NN"),
+                Pair.of("thei", "DT"), Pair.of("ar", "VBZ"), Pair.of("sentenc", "NN")
+        );
+
+        List<Pair<String, String>> result = NLPUtils.removeStopWordPosPairs(wordPosPairs);
+        assertEquals(
+                List.of(
+                        Pair.of("test", "NN"), Pair.of("sentenc", "NN"),
+                        Pair.of("test", "NN"), Pair.of("sentenc", "NN"),
+                        Pair.of("sentenc", "NN")
+                ),
+                result
+        );
     }
 
     @Test

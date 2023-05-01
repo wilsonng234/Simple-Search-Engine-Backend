@@ -61,6 +61,21 @@ class NLPUtilsTest {
 
     @Test
     void removeStopWords() {
+        List<String> words = List.of(
+                "thi", "is", "a", "test", "sentenc",
+                "thi", "is", "anoth", "test", "sentenc",
+                "thei", "ar", "sentenc"
+        );
+
+        List<String> result = NLPUtils.removeStopWords(words);
+        assertEquals(
+                List.of(
+                        "test", "sentenc",
+                        "test", "sentenc",
+                        "sentenc"
+                ),
+                result
+        );
     }
 
     @Test

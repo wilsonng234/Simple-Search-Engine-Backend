@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class NLPUtilsTest {
 
@@ -186,5 +187,22 @@ class NLPUtilsTest {
 
     @Test
     void parsePhraseSearchQuery() {
+        String query = "hello world \"test page\" movie \"movie\" \"movie test page\" testing";
+
+        List<String> phrases = NLPUtils.parsePhraseSearchQuery(query);
+        assertEquals(
+                List.of(
+                        "test page", "movie", "movie test page"
+                ),
+                phrases
+        );
+
+        try {
+            // invalid query should not break the program
+            query = "hello world \"this\" query\" is \" invalid\"";
+            phrases = NLPUtils.parsePhraseSearchQuery(query);
+        } catch (Exception e) {
+            fail();
+        }
     }
 }

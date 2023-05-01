@@ -201,6 +201,41 @@ class NLPUtilsTest {
 
     @Test
     void stemWordPosPairs() {
+        List<Pair<String, String>> wordPosPairs = List.of(
+                Pair.of("This", "DT"),
+                Pair.of("is", "VBZ"),
+                Pair.of("a", "DT"),
+                Pair.of("test", "NN"),
+                Pair.of("sentence", "NN"),
+                Pair.of("This", "DT"),
+                Pair.of("is", "VBZ"),
+                Pair.of("another", "DT"),
+                Pair.of("test", "NN"),
+                Pair.of("sentence", "NN"),
+                Pair.of("They", "PRP"),
+                Pair.of("are", "VBP"),
+                Pair.of("sentences", "NNS")
+        );
+        List<Pair<String, String>> stemmedWordPosPairs = NLPUtils.stemWordPosPairs(wordPosPairs);
+
+        assertEquals(
+                List.of(
+                        Pair.of("thi", "DT"),
+                        Pair.of("is", "VBZ"),
+                        Pair.of("a", "DT"),
+                        Pair.of("test", "NN"),
+                        Pair.of("sentenc", "NN"),
+                        Pair.of("thi", "DT"),
+                        Pair.of("is", "VBZ"),
+                        Pair.of("anoth", "DT"),
+                        Pair.of("test", "NN"),
+                        Pair.of("sentenc", "NN"),
+                        Pair.of("thei", "PRP"),
+                        Pair.of("ar", "VBP"),
+                        Pair.of("sentenc", "NNS")
+                ),
+                stemmedWordPosPairs
+        );
     }
 
     @Test

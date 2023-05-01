@@ -7,6 +7,10 @@
    Fields required: MONGO_DATABASE, MONGO_USER, MONGO_PASSWORD, MONGO_CLUSTER
    
 2. Run `./mvnw spring-boot:run` to get localhost  
+
+[Optional]  
+- Run `.\mvnw test` to run the JUnit tests    
+- Run `.\mvnw install jacoco:report` to generate Jacoco test coverage report
 ```
 
 ## Collections

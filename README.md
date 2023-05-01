@@ -10,6 +10,7 @@
 
 [Optional]  
 - Run `.\mvnw test` to run the JUnit tests    
+- Run `.\mvnw install  jacoco:report` to generate Jacoco test coverage report
 ```
 
 ## Collections

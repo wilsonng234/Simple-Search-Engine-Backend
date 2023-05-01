@@ -81,6 +81,21 @@ class NLPUtilsTest {
 
     @Test
     void stemWords() {
+        List<String> words = List.of(
+                "This", "is", "a", "test", "sentence",
+                "This", "is", "another", "test", "sentence",
+                "They", "are", "sentences"
+        );
+        List<String> stemmedWords = NLPUtils.stemWords(words);
+
+        assertEquals(
+                List.of(
+                        "thi", "is", "a", "test", "sentenc",
+                        "thi", "is", "anoth", "test", "sentenc",
+                        "thei", "ar", "sentenc"
+                ),
+                stemmedWords
+        );
     }
 
     @Test

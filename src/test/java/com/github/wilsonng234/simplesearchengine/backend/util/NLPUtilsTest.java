@@ -92,6 +92,9 @@ class NLPUtilsTest {
 
     @Test
     void stemWord() {
+        String word = "THIS";
+        String stemmedWord = NLPUtils.stemWord(word);
+        assertEquals("thi", stemmedWord);
     }
 
     @Test

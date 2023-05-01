@@ -129,6 +129,48 @@ class NLPUtilsTest {
 
     @Test
     void removePunctuationsWordPosPairs() {
+        List<Pair<String, String>> wordPosPairs = List.of(
+                Pair.of("$!2324,$#@", "DT"),
+                Pair.of("213$231", "VBZ"),
+                Pair.of(":helloworld,", "DT"),
+                Pair.of("!hello:world:2022,1,2,", "NN"),
+                Pair.of("\"hello:world:2022,1,2", "NN"),
+                Pair.of("hello:world:2022,1,2\"", "DT"),
+                Pair.of("\"hello:world:2022,1,2\"", "VBZ"),
+                Pair.of("hello:world:2022,1,2", "DT")
+        );
+
+        boolean removeDoubleQuotationMarks = true;
+        List<Pair<String, String>> removePunctuations = NLPUtils.removePunctuationsWordPosPairs(wordPosPairs, removeDoubleQuotationMarks);
+        assertEquals(
+                List.of(
+                        Pair.of("2324", "DT"),
+                        Pair.of("213$231", "VBZ"),
+                        Pair.of("helloworld", "DT"),
+                        Pair.of("hello:world:2022,1,2", "NN"),
+                        Pair.of("hello:world:2022,1,2", "NN"),
+                        Pair.of("hello:world:2022,1,2", "DT"),
+                        Pair.of("hello:world:2022,1,2", "VBZ"),
+                        Pair.of("hello:world:2022,1,2", "DT")
+                ),
+                removePunctuations
+        );
+
+        removeDoubleQuotationMarks = false;
+        removePunctuations = NLPUtils.removePunctuationsWordPosPairs(wordPosPairs, removeDoubleQuotationMarks);
+        assertEquals(
+                List.of(
+                        Pair.of("2324", "DT"),
+                        Pair.of("213$231", "VBZ"),
+                        Pair.of("helloworld", "DT"),
+                        Pair.of("hello:world:2022,1,2", "NN"),
+                        Pair.of("\"hello:world:2022,1,2", "NN"),
+                        Pair.of("hello:world:2022,1,2\"", "DT"),
+                        Pair.of("\"hello:world:2022,1,2\"", "VBZ"),
+                        Pair.of("hello:world:2022,1,2", "DT")
+                ),
+                removePunctuations
+        );
     }
 
     @Test

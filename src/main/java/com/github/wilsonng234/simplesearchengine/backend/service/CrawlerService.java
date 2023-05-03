@@ -40,8 +40,6 @@ public class CrawlerService {
     @Autowired
     private PostingService postingService;
     @Autowired
-    private PostingListService postingListService;
-    @Autowired
     private ParentLinkService parentLinkService;
 
     @Data
@@ -258,6 +256,7 @@ public class CrawlerService {
             }
 
             // get the document
+            int maxTF = 0;
             long size = crawler.getSize();
             String title = crawler.getTitle();
 
@@ -265,20 +264,26 @@ public class CrawlerService {
             List<Pair<String, Integer>> titleWordFreqs = crawler.getTitleWordFreqs();
             for (Pair<String, Integer> wordFreq : titleWordFreqs) {
                 String word = wordFreq.getFirst();
+                Integer freq = wordFreq.getSecond();
                 wordService.getWord(word, WordService.QueryType.WORD)
                         .orElseGet(() -> wordService.putWord(word));
+                maxTF = Math.max(maxTF, freq);
             }
 
             // set up bodyWordFreqs
             List<Pair<String, Integer>> bodyWordFreqs = crawler.getBodyWordFreqs();
             for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
                 String word = wordFreq.getFirst();
+                Integer freq = wordFreq.getSecond();
                 wordService.getWord(word, WordService.QueryType.WORD)
                         .orElseGet(() -> wordService.putWord(word));
+                maxTF = Math.max(maxTF, freq);
             }
 
             Set<String> childrenLinks = crawler.getChildrenLinks();
-            Document document = new Document(crawler.getUrl(), size, title, lastModificationDate, titleWordFreqs, bodyWordFreqs, childrenLinks);
+            Document document = new Document(crawler.getUrl(), size, title, lastModificationDate,
+                    titleWordFreqs, bodyWordFreqs, childrenLinks,
+                    maxTF);
 
             // update the forward index
             document = documentService.putDocument(document);
@@ -300,7 +305,6 @@ public class CrawlerService {
                 }).getWordId();
 
                 Posting posting = postingService.putPosting(wordId, "title", docId, tf);
-                postingListService.putPostingList(wordId, "title", posting);
             }
 
             for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
@@ -313,7 +317,6 @@ public class CrawlerService {
                 }).getWordId();
 
                 Posting posting = postingService.putPosting(wordId, "body", docId, tf);
-                postingListService.putPostingList(wordId, "body", posting);
             }
 
             // breadth-first search

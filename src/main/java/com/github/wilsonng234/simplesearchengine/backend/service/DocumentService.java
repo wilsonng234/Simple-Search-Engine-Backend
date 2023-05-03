@@ -55,7 +55,8 @@ public class DocumentService {
                 .set("lastModificationDate", document.getLastModificationDate())
                 .set("titleWordFreqs", document.getTitleWordFreqs())
                 .set("bodyWordFreqs", document.getBodyWordFreqs())
-                .set("childrenUrls", document.getChildrenUrls());
+                .set("childrenUrls", document.getChildrenUrls())
+                .set("maxTF", document.getMaxTF());
         FindAndModifyOptions findAndModifyOptions = org.springframework.data.mongodb.core.FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<Document> cls = Document.class;
 

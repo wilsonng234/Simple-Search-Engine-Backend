@@ -34,8 +34,6 @@ public class SearchEngineService {
     @Autowired
     private DocumentService documentService;
     @Autowired
-    private PostingListService postingListService;
-    @Autowired
     private MongoTemplate mongoTemplate;
     private List<Word> words;
     private List<Document> documents;

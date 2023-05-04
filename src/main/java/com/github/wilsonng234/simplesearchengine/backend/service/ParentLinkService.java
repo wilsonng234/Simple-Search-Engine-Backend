@@ -31,8 +31,7 @@ public class ParentLinkService {
     public ParentLink putParentLinks(ParentLink parentLink) {
         String url = parentLink.getUrl();
         Set<String> parentUrls = parentLink.getParentUrls();
-        if (url.equals("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm"))
-            System.out.println(parentUrls);
+
         Query query = new Query(Criteria.where("url").is(url));
         Update update = new Update()
                 .addToSet("parentUrls").each(parentUrls);

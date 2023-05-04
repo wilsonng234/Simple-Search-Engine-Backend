@@ -112,7 +112,6 @@ public class PageRankService {
                     l2Norm += Math.pow(newPageRank - oldPageRank, 2);
                 }
 
-//                System.out.println("L2 norm: " + l2Norm);
                 return l2Norm < stopThreshold;
             };
 
@@ -172,7 +171,6 @@ public class PageRankService {
                 putPageRank(pageRank);
             }
 
-            System.out.println(parentDocIdsMap.get("6453e043c27b2e95c4a9c8a9"));
             return true;
         }
     }

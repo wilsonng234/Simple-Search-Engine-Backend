@@ -215,12 +215,10 @@ public class CrawlerService {
         Queue<Crawler> crawlers = new LinkedList<>();
         crawlers.add(new Crawler(url));
         Set<String> crawledLinks = new HashSet<>();
+        
+        ParentLink originParentLink = new ParentLink(url, new HashSet<>());
+        parentLinkService.putParentLinks(originParentLink);
 
-        Optional<ParentLink> optionalParentLink = parentLinkService.getParentLinks(url);
-        if (optionalParentLink.isEmpty()) {
-            ParentLink originParentLink = new ParentLink(url, new HashSet<>());
-            parentLinkService.putParentLinks(originParentLink);
-        }
         while (crawledPages < pagesToCrawl && !crawlers.isEmpty()) {
             Crawler crawler = crawlers.poll();
 

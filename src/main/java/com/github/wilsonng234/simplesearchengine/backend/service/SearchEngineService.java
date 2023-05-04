@@ -147,8 +147,11 @@ public class SearchEngineService {
             double pageRank = pageRanksVector.get(i);
             double score = w1 * cosineSimilarity + w2 * pageRank;
 
-            if (!Double.isNaN(score))
-                scoresVector.set(i, score);
+            double epsilon = 0.000001d;
+            if (Double.isNaN(score) || Math.abs(cosineSimilarity - 0.0) < epsilon)
+                score = 0.0;
+
+            scoresVector.set(i, score);
         }
     }
 

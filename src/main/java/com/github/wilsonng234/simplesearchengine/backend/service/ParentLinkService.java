@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Scope("prototype")
@@ -28,9 +29,13 @@ public class ParentLinkService {
     }
 
     public ParentLink putParentLinks(ParentLink parentLink) {
-        Query query = new Query(Criteria.where("url").is(parentLink.getUrl()));
+        String url = parentLink.getUrl();
+        Set<String> parentUrls = parentLink.getParentUrls();
+        if (url.equals("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm"))
+            System.out.println(parentUrls);
+        Query query = new Query(Criteria.where("url").is(url));
         Update update = new Update()
-                .set("parentUrls", parentLink.getParentUrls());
+                .addToSet("parentUrls").each(parentUrls);
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<ParentLink> cls = ParentLink.class;
 

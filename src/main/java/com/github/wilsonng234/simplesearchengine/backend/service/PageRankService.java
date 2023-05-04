@@ -164,10 +164,24 @@ public class PageRankService {
             }
 
             // update page rank
+            List<PageRank> pageRanks = new LinkedList<>();
+            double maxPageRank = 0;
             for (Map.Entry<String, Pair<Double, Integer>> page : pageRankStatsMap.entrySet()) {
                 String docId = page.getKey();
-                Double newPageRank = page.getValue().getFirst();
+                double newPageRank = page.getValue().getFirst();
                 PageRank pageRank = new PageRank(docId, newPageRank);
+                pageRanks.add(pageRank);
+                maxPageRank = Math.max(maxPageRank, newPageRank);
+            }
+
+            if (maxPageRank == 0) {
+                logger.warn("Max page rank is 0");
+                return false;
+            }
+            
+            for (PageRank pageRank : pageRanks) {
+                double pag = pageRank.getPageRank();
+                pageRank.setPageRank(pag / maxPageRank);
                 putPageRank(pageRank);
             }
 

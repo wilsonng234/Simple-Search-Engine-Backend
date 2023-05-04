@@ -201,10 +201,10 @@ public class CrawlerService {
         for (String childLink : childrenLinks) {
             if (!crawledLinks.contains(childLink)) {
                 crawlers.add(new Crawler(childLink));
-
-                ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(url)));
-                parentLinkService.putParentLinks(parentLink);
             }
+
+            ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(url)));
+            parentLinkService.putParentLinks(parentLink);
         }
     }
 

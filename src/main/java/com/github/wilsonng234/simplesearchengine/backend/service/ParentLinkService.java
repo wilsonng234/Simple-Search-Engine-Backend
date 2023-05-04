@@ -20,7 +20,7 @@ import java.util.Optional;
 public class ParentLinkService {
     private static final Logger logger = LogManager.getLogger(ParentLinkService.class);
     @Autowired
-    MongoTemplate mongoTemplate;
+    private MongoTemplate mongoTemplate;
 
     public Optional<ParentLink> getParentLinks(String url) {
         Query query = new Query(Criteria.where("url").is(url));

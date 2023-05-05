@@ -82,7 +82,7 @@ public class PageRankService {
                 for (String childUrl : childrenUrls) {
                     Document childDocument = mongoTemplate.findOne(new Query(Criteria.where("url").is(childUrl)), Document.class);
                     if (childDocument == null) {
-                        logger.warn("Child document not found: " + childUrl);
+//                        logger.warn("Child document not found: " + childUrl);
                         continue;
                     }
                     String childDocId = childDocument.getDocId();
@@ -178,7 +178,7 @@ public class PageRankService {
                 logger.warn("Max page rank is 0");
                 return false;
             }
-            
+
             for (PageRank pageRank : pageRanks) {
                 double pag = pageRank.getPageRank();
                 pageRank.setPageRank(pag / maxPageRank);

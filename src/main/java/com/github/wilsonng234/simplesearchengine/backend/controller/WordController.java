@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -39,6 +40,11 @@ public class WordController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/prefix")
+    public ResponseEntity<List<Word>> getTenWordsByPrefix(@RequestParam String prefix) {
+        return new ResponseEntity<>(wordService.getTenWordsByPrefix(prefix), HttpStatus.OK);
     }
 
     @PutMapping

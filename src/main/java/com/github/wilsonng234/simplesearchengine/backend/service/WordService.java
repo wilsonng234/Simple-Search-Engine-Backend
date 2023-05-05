@@ -1,6 +1,7 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Word;
+import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import com.mongodb.DuplicateKeyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +42,16 @@ public class WordService {
             return Optional.ofNullable(mongoTemplate.findOne(query, Word.class));
         } else
             return Optional.empty();
+    }
+
+    public List<Word> getWordByPrefix(String prefix) {
+        List<String> words = NLPUtils.tokenize(prefix);
+        words = NLPUtils.removePunctuations(words, true);
+        words = NLPUtils.stemWords(words);
+
+        String regex = "^" + String.join(" ", words);
+        Query query = new Query(Criteria.where("word").regex(regex));
+        return mongoTemplate.find(query, Word.class);
     }
 
     public List<Word> allWords() {

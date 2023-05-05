@@ -331,6 +331,7 @@ public class CrawlerService {
             crawledPages++;
         }
 
+        pageRankService.updatePageRank();
         long end = System.currentTimeMillis();
         logger.info("Crawled " + crawledPages + " pages in " + (end - start) / 1000.0 + " seconds");
         return true;

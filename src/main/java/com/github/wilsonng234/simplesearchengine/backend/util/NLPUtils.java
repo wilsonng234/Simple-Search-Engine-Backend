@@ -62,7 +62,7 @@ public abstract class NLPUtils {
         List<String> posTags = sentences.stream()
                 .flatMap(sentence -> sentence.posTags().stream())
                 .collect(Collectors.toCollection(ArrayList::new));
-        
+
         List<Pair<String, String>> partsOfSpeech = new LinkedList<>();
         for (int i = 0; i < words.size() && i < posTags.size(); i++)
             partsOfSpeech.add(Pair.of(words.get(i), posTags.get(i)));
@@ -180,14 +180,19 @@ public abstract class NLPUtils {
             String secondWord = wordPosPairs.get(i + 1).getFirst();
             String secondPos = wordPosPairs.get(i + 1).getSecond();
 
-            List<String> posTags = Arrays.asList(firstPos, secondPos);
-            if (biGramGrammaticalPatterns.contains(posTags)) {
-                stringBuilder.append(firstWord);
-                stringBuilder.append(" ");
-                stringBuilder.append(secondWord);
+            for (List<String> grammaticalPattern : biGramGrammaticalPatterns) {
+                String firstWordPos = grammaticalPattern.get(0);
+                String secondWordPos = grammaticalPattern.get(1);
 
-                biGrams.add(stringBuilder.toString());
-                stringBuilder.setLength(0);
+                if (firstPos.startsWith(firstWordPos) && secondPos.startsWith(secondWordPos)) {
+                    stringBuilder.append(firstWord);
+                    stringBuilder.append(" ");
+                    stringBuilder.append(secondWord);
+
+                    biGrams.add(stringBuilder.toString());
+                    stringBuilder.setLength(0);
+                    break;
+                }
             }
         }
 
@@ -206,16 +211,22 @@ public abstract class NLPUtils {
             String thirdWord = wordPosPairs.get(i + 2).getFirst();
             String thirdPos = wordPosPairs.get(i + 2).getSecond();
 
-            List<String> posTags = Arrays.asList(firstPos, secondPos, thirdPos);
-            if (triGramGrammaticalPatterns.contains(posTags)) {
-                stringBuilder.append(firstWord);
-                stringBuilder.append(" ");
-                stringBuilder.append(secondWord);
-                stringBuilder.append(" ");
-                stringBuilder.append(thirdWord);
+            for (List<String> grammaticalPattern : triGramGrammaticalPatterns) {
+                String firstWordPos = grammaticalPattern.get(0);
+                String secondWordPos = grammaticalPattern.get(1);
+                String thirdWordPos = grammaticalPattern.get(2);
 
-                triGrams.add(stringBuilder.toString());
-                stringBuilder.setLength(0);
+                if (firstPos.startsWith(firstWordPos) && secondPos.startsWith(secondWordPos) && thirdPos.startsWith(thirdWordPos)) {
+                    stringBuilder.append(firstWord);
+                    stringBuilder.append(" ");
+                    stringBuilder.append(secondWord);
+                    stringBuilder.append(" ");
+                    stringBuilder.append(thirdWord);
+
+                    triGrams.add(stringBuilder.toString());
+                    stringBuilder.setLength(0);
+                    break;
+                }
             }
         }
 

@@ -1,6 +1,7 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
+import com.github.wilsonng234.simplesearchengine.backend.model.PageRank;
 import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
 import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
@@ -34,9 +35,12 @@ public class SearchEngineService {
     @Autowired
     private DocumentService documentService;
     @Autowired
+    private PageRankService pageRankService;
+    @Autowired
     private MongoTemplate mongoTemplate;
     private List<Word> words;
     private List<Document> documents;
+    private List<Double> pageRanksVector;
     private List<List<Double>> documentsVector;     // index1: docId, index2: wordID, value: termWeight
     private List<Double> queryVector;               // index: wordID, value: termWeight
     @Getter
@@ -137,10 +141,17 @@ public class SearchEngineService {
     private void setUpScoresVector() {
         for (int i = 0; i < documents.size(); i++) {
             List<Double> documentVector = documentsVector.get(i);
-            double score = VSMUtils.getCosineSimilarity(documentVector, queryVector);
+            double w1 = 0.8;
+            double w2 = 0.2;
+            double cosineSimilarity = VSMUtils.getCosineSimilarity(documentVector, queryVector);
+            double pageRank = pageRanksVector.get(i);
+            double score = w1 * cosineSimilarity + w2 * pageRank;
 
-            if (!Double.isNaN(score))
-                scoresVector.set(i, score);
+            double epsilon = 0.000001d;
+            if (Double.isNaN(score) || Math.abs(cosineSimilarity - 0.0) < epsilon)
+                score = 0.0;
+
+            scoresVector.set(i, score);
         }
     }
 
@@ -151,9 +162,20 @@ public class SearchEngineService {
         int i = 0;
         documentsMap = new HashMap<>();
         scoresVector = Collections.synchronizedList(new ArrayList<>(documents.size()));
+        pageRanksVector = Collections.synchronizedList(new ArrayList<>(documents.size()));
         for (Document document : documents) {
-            documentsMap.put(document.getDocId(), i);
+            String docId = document.getDocId();
+
+            documentsMap.put(docId, i);
             scoresVector.add(0.0);
+
+            Optional<PageRank> pageRankOptional = pageRankService.getPageRank(docId);
+            if (pageRankOptional.isEmpty()) {
+                logger.warn("PageRank for document " + docId + " not found");
+                pageRanksVector.add(1 / (double) documents.size());
+            } else {
+                pageRanksVector.add(pageRankOptional.get().getPageRank());
+            }
             i += 1;
         }
 

@@ -1,8 +1,8 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
+import com.github.wilsonng234.simplesearchengine.backend.model.PageRank;
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
-import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
 import com.github.wilsonng234.simplesearchengine.backend.util.CrawlerUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import lombok.Data;
@@ -41,6 +41,8 @@ public class CrawlerService {
     private PostingService postingService;
     @Autowired
     private ParentLinkService parentLinkService;
+    @Autowired
+    private PageRankService pageRankService;
 
     @Data
     private class Crawler {
@@ -199,10 +201,10 @@ public class CrawlerService {
         for (String childLink : childrenLinks) {
             if (!crawledLinks.contains(childLink)) {
                 crawlers.add(new Crawler(childLink));
-
-                ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(url)));
-                parentLinkService.putParentLinks(parentLink);
             }
+
+            ParentLink parentLink = new ParentLink(childLink, new HashSet<>(Collections.singleton(url)));
+            parentLinkService.putParentLinks(parentLink);
         }
     }
 
@@ -216,11 +218,9 @@ public class CrawlerService {
         crawlers.add(new Crawler(url));
         Set<String> crawledLinks = new HashSet<>();
 
-        Optional<ParentLink> optionalParentLink = parentLinkService.getParentLinks(url);
-        if (optionalParentLink.isEmpty()) {
-            ParentLink originParentLink = new ParentLink(url, new HashSet<>());
-            parentLinkService.putParentLinks(originParentLink);
-        }
+        ParentLink originParentLink = new ParentLink(url, new HashSet<>());
+        parentLinkService.putParentLinks(originParentLink);
+
         while (crawledPages < pagesToCrawl && !crawlers.isEmpty()) {
             Crawler crawler = crawlers.poll();
 
@@ -304,7 +304,7 @@ public class CrawlerService {
                     return wordService.putWord(word);
                 }).getWordId();
 
-                Posting posting = postingService.putPosting(wordId, "title", docId, tf);
+                postingService.putPosting(wordId, "title", docId, tf);
             }
 
             for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
@@ -316,8 +316,13 @@ public class CrawlerService {
                     return wordService.putWord(word);
                 }).getWordId();
 
-                Posting posting = postingService.putPosting(wordId, "body", docId, tf);
+                postingService.putPosting(wordId, "body", docId, tf);
             }
+
+            // put page rank
+            Optional<PageRank> pageRankOptional = pageRankService.getPageRank(docId);
+            PageRank pageRank = pageRankOptional.orElseGet(() -> new PageRank(docId));
+            pageRankService.putPageRank(pageRank);
 
             // breadth-first search
             bfs(crawlers, crawledLinks, childrenLinks, crawler.getUrl());

@@ -14,13 +14,14 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Scope("prototype")
 public class ParentLinkService {
     private static final Logger logger = LogManager.getLogger(ParentLinkService.class);
     @Autowired
-    MongoTemplate mongoTemplate;
+    private MongoTemplate mongoTemplate;
 
     public Optional<ParentLink> getParentLinks(String url) {
         Query query = new Query(Criteria.where("url").is(url));
@@ -28,9 +29,12 @@ public class ParentLinkService {
     }
 
     public ParentLink putParentLinks(ParentLink parentLink) {
-        Query query = new Query(Criteria.where("url").is(parentLink.getUrl()));
+        String url = parentLink.getUrl();
+        Set<String> parentUrls = parentLink.getParentUrls();
+
+        Query query = new Query(Criteria.where("url").is(url));
         Update update = new Update()
-                .set("parentUrls", parentLink.getParentUrls());
+                .addToSet("parentUrls").each(parentUrls);
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
         Class<ParentLink> cls = ParentLink.class;
 

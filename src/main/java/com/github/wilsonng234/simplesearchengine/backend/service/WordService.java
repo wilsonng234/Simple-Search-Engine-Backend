@@ -44,14 +44,16 @@ public class WordService {
             return Optional.empty();
     }
 
-    public List<Word> getWordByPrefix(String prefix) {
+    public List<Word> getTenWordsByPrefix(String prefix) {
         List<String> words = NLPUtils.tokenize(prefix);
         words = NLPUtils.removePunctuations(words, true);
         words = NLPUtils.stemWords(words);
 
         String regex = "^" + String.join(" ", words);
         Query query = new Query(Criteria.where("word").regex(regex));
-        return mongoTemplate.find(query, Word.class);
+
+        List<Word> prefixWords = mongoTemplate.find(query, Word.class);
+        return prefixWords.subList(0, Math.min(prefixWords.size(), 10));
     }
 
     public List<Word> allWords() {

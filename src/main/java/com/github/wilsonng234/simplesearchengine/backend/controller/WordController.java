@@ -43,8 +43,8 @@ public class WordController {
     }
 
     @GetMapping("/prefix")
-    public ResponseEntity<List<Word>> getWordByPrefix(@RequestParam String prefix) {
-        return new ResponseEntity<>(wordService.getWordByPrefix(prefix), HttpStatus.OK);
+    public ResponseEntity<List<Word>> getTenWordsByPrefix(@RequestParam String prefix) {
+        return new ResponseEntity<>(wordService.getTenWordsByPrefix(prefix), HttpStatus.OK);
     }
 
     @PutMapping

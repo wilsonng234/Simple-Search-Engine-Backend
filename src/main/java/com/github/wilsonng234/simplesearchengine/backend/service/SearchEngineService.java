@@ -2,12 +2,11 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.model.PageRank;
-import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
+import com.github.wilsonng234.simplesearchengine.backend.model.TermWeight;
 import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.SearchEngineUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.VSMUtils;
-import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -16,13 +15,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +30,8 @@ public class SearchEngineService {
     private WordService wordService;
     @Autowired
     private DocumentService documentService;
+    @Autowired
+    private TermWeightService termWeightService;
     @Autowired
     private PageRankService pageRankService;
     @Autowired
@@ -202,101 +200,22 @@ public class SearchEngineService {
     }
 
     private void setUpDocumentsVector() {
-        double titleWeight = 10.0;
-        int numDocs = documents.size();
+        List<TermWeight> termWeights = termWeightService.allTermWeights();
 
-        class UpdateTermWeightsByWords implements Runnable {
-            private final List<Word> words;
+        for (TermWeight termWeight : termWeights) {
+            String docId = termWeight.getDocId();
+            String wordId = termWeight.getWordId();
+            double termWeightValue = termWeight.getTermWeight();
 
-            public UpdateTermWeightsByWords(List<Word> words) {
-                this.words = words;
+            Integer docIndex = documentsMap.get(docId);
+            Integer wordIndex = wordsMap.get(wordId);
+
+            if (docIndex == null || wordIndex == null) {
+                logger.error("Doc index or word index is null");
+                continue;
             }
 
-            @Override
-            public void run() {
-                for (Word word : words) {
-                    String wordId = word.getWordId();
-                    Integer wordIndex = wordsMap.get(wordId);
-
-                    if (wordIndex == null) {
-                        logger.error("Word index is null" + word.getWord());
-                        continue;
-                    }
-
-                    List<Posting> titlePostings = mongoTemplate.find(
-                            Query.query(
-                                    Criteria.where("type").is("title")
-                                            .and("wordId").is(wordId)),
-                            Posting.class
-                    );
-                    List<Posting> bodyPostings = mongoTemplate.find(
-                            Query.query(Criteria.where("type").is("body")
-                                    .and("wordId").is(wordId)),
-                            Posting.class
-                    );
-
-                    int titleDocFreq = titlePostings.size();
-                    for (Posting posting : titlePostings) {
-                        String docId = posting.getDocId();
-                        Integer docIndex = documentsMap.get(docId);
-                        if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
-                            continue;
-                        }
-                        int titleTF = posting.getTf();
-                        int titleMaxTF = documents.get(docIndex).getTitleMaxTF();
-
-                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = titleWeight * VSMUtils.getTermWeight(titleTF, numDocs, titleDocFreq, titleMaxTF);
-                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
-                    }
-
-                    int bodyDocFreq = bodyPostings.size();
-                    for (Posting posting : bodyPostings) {
-                        String docId = posting.getDocId();
-                        Integer docIndex = documentsMap.get(docId);
-                        if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
-                            continue;
-                        }
-                        int bodyTF = posting.getTf();
-                        int bodyMaxTF = documents.get(docIndex).getBodyMaxTF();
-
-                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = VSMUtils.getTermWeight(bodyTF, numDocs, bodyDocFreq, bodyMaxTF);
-                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
-                    }
-                }
-            }
-        }
-
-        int numThreads = Runtime.getRuntime().availableProcessors();
-        ExecutorService executorService = Executors.newCachedThreadPool();
-
-        double taskThreadsRatio = 1d;     // taskThreadsRatio: (num tasks / num available threads)
-        int chunkSize = (int) Math.ceil((double) words.size() / numThreads / taskThreadsRatio);
-        List<List<Word>> wordsChunks = Lists.partition(words, chunkSize);
-        List<Future<?>> futures = new ArrayList<>(wordsChunks.size());
-        for (List<Word> chunk : wordsChunks)
-            futures.add(executorService.submit(new UpdateTermWeightsByWords(chunk)));
-
-        executorService.shutdown();     // stop accepting new tasks
-        try {
-            if (!executorService.awaitTermination(60, TimeUnit.MINUTES)) {
-                executorService.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            logger.error(ex.getMessage());
-            executorService.shutdownNow();
-        }
-
-        // Handle tasks exceptions
-        for (Future<?> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException ex) {
-                logger.error(ex.getMessage());
-            }
+            documentsVector.get(docIndex).set(wordIndex, termWeightValue);
         }
     }
 }

@@ -42,6 +42,8 @@ public class CrawlerService {
     @Autowired
     private ParentLinkService parentLinkService;
     @Autowired
+    private TermWeightService termWeightService;
+    @Autowired
     private PageRankService pageRankService;
 
     @Data
@@ -305,7 +307,8 @@ public class CrawlerService {
                     return wordService.putWord(word);
                 }).getWordId();
 
-                postingService.putPosting(wordId, "title", docId, tf);
+                String type = "title";
+                postingService.putPosting(wordId, type, docId, tf);
             }
 
             for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
@@ -317,12 +320,12 @@ public class CrawlerService {
                     return wordService.putWord(word);
                 }).getWordId();
 
-                postingService.putPosting(wordId, "body", docId, tf);
+                String type = "body";
+                postingService.putPosting(wordId, type, docId, tf);
             }
 
             // put page rank
-            Optional<PageRank> pageRankOptional = pageRankService.getPageRank(docId);
-            PageRank pageRank = pageRankOptional.orElseGet(() -> new PageRank(docId));
+            PageRank pageRank = new PageRank(docId);
             pageRankService.putPageRank(pageRank);
 
             // breadth-first search
@@ -331,10 +334,19 @@ public class CrawlerService {
             crawledLinks.add(crawler.getUrl());
             crawledPages++;
         }
-
-        pageRankService.updatePageRank();
         long end = System.currentTimeMillis();
         logger.info("Crawled " + crawledPages + " pages in " + (end - start) / 1000.0 + " seconds");
+
+        start = System.currentTimeMillis();
+        termWeightService.updateTermWeights();
+        end = System.currentTimeMillis();
+        logger.info("Updated term weights in " + (end - start) / 1000.0 + " seconds");
+
+        start = System.currentTimeMillis();
+        pageRankService.updatePageRank();
+        end = System.currentTimeMillis();
+        logger.info("Updated page ranks in " + (end - start) / 1000.0 + " seconds");
+
         return true;
     }
 }

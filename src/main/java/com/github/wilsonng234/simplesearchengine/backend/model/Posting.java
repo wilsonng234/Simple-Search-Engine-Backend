@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "posting")
+@Document(collection = "postings")
 @CompoundIndexes({
         @CompoundIndex(def = "{'type': 1, 'wordId': 1}"),
         @CompoundIndex(def = "{'type': 1, 'wordId': 1, 'docId': 1}", unique = true)

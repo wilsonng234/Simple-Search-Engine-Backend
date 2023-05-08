@@ -16,8 +16,4 @@ public class Word {
     private String wordId;
     @Indexed(unique = true)
     private String word;
-
-    public Word(String word) {
-        this.word = word;
-    }
 }

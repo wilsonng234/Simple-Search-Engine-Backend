@@ -1,7 +1,6 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
-import com.github.wilsonng234.simplesearchengine.backend.model.PageRank;
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
 import com.github.wilsonng234.simplesearchengine.backend.util.CrawlerUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
@@ -323,10 +322,6 @@ public class CrawlerService {
                 String type = "body";
                 postingService.putPosting(wordId, type, docId, tf);
             }
-
-            // put page rank
-            PageRank pageRank = new PageRank(docId);
-            pageRankService.putPageRank(pageRank);
 
             // breadth-first search
             bfs(crawlers, crawledLinks, childrenLinks, crawler.getUrl());

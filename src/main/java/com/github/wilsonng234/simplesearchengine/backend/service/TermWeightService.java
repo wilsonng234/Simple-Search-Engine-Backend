@@ -20,22 +20,22 @@ import java.util.*;
 import java.util.concurrent.*;
 
 @Service
-public class TermWeightsVectorService {
-    private static final Logger logger = LogManager.getLogger(TermWeightsVectorService.class);
+public class TermWeightService {
+    private static final Logger logger = LogManager.getLogger(TermWeightService.class);
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public Optional<TermWeightsVector> getTermWeightsVector(String docId) {
+    public Optional<TermWeight> getTermWeightsVector(String docId) {
         Query query = new Query(Criteria.where("docId").is(docId));
 
-        return Optional.ofNullable(mongoTemplate.findOne(query, TermWeightsVector.class));
+        return Optional.ofNullable(mongoTemplate.findOne(query, TermWeight.class));
     }
 
-    public TermWeightsVector putTermWeightsVector(TermWeightsVector termWeightsVector) {
-        Query query = new Query(Criteria.where("docId").is(termWeightsVector.getDocId()));
-        Update update = new Update().set("termWeights", termWeightsVector.getTermWeights());
+    public TermWeight putTermWeightsVector(TermWeight termWeight) {
+        Query query = new Query(Criteria.where("docId").is(termWeight.getDocId()));
+        Update update = new Update().set("termWeights", termWeight.getTermWeights());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
-        Class<TermWeightsVector> cls = TermWeightsVector.class;
+        Class<TermWeight> cls = TermWeight.class;
 
         try {
             return mongoTemplate.findAndModify(query, update, findAndModifyOptions, cls);
@@ -153,13 +153,13 @@ public class TermWeightsVectorService {
                         termWeights.put(wordId, documentVector.get(wordIndex));
                     }
 
-                    TermWeightsVector termWeightsVector = new TermWeightsVector(docId, termWeights);
-                    putTermWeightsVector(termWeightsVector);
+                    TermWeight termWeight = new TermWeight(docId, termWeights);
+                    putTermWeightsVector(termWeight);
                 }
             }
         }
 
-        synchronized (TermWeightsVectorService.class) {
+        synchronized (TermWeightService.class) {
             int numThreads = Runtime.getRuntime().availableProcessors();
             ExecutorService executorService = Executors.newCachedThreadPool();
 

@@ -11,8 +11,8 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "termWeightsVectors")
-public class TermWeightsVector {
+@Document(collection = "termWeights")
+public class TermWeight {
     @Indexed
     private String docId;
     private Map<String, Double> termWeights;     // non-zero term weights   (key: wordId, value: term weight)

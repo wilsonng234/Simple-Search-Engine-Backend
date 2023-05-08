@@ -15,8 +15,8 @@ MongoDBCompass: Version 1.36.4
 
 2. Set up [application.properties](src/main/resources/application.properties)  
    Default value:  
-   `spring.data.mongodb.database=${MONGO_DATABASE}`: the name of the database
-   `spring.data.mongodb.uri=mongodb://localhost:27017/`: the Connection String URI
+   `spring.data.mongodb.database=${MONGO_DATABASE}`: the name of the database  
+   `spring.data.mongodb.uri=mongodb://localhost:27017/`: the Connection String URI  
    `spring.data.mongodb.auto-index-creation:true`: automatically create indexes for the collections  
    `server.port=8080`: the port that the backend will run on
 

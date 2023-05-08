@@ -31,8 +31,6 @@ public class SearchEngineService {
     @Autowired
     private DocumentService documentService;
     @Autowired
-    private TermWeightService termWeightService;
-    @Autowired
     private TermWeightsVectorService termWeightsVectorService;
     @Autowired
     private PageRankService pageRankService;

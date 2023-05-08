@@ -17,6 +17,6 @@ public class PageRank {
 
     public PageRank(String docId) {
         this.docId = docId;
-        this.pageRank = 1.0;
+        this.pageRank = 0.0;
     }
 }

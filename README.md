@@ -3,7 +3,7 @@
 ## Installation
 
 SDK: Oracle OpenJDK version 17.0.6  
-MongoDBCompass: Version 1.36.4
+MongoDBCompass: version 1.36.4
 
 ## Getting started
 

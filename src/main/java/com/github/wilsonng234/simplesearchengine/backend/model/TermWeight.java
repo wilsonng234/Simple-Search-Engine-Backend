@@ -13,7 +13,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Document(collection = "termWeights")
 public class TermWeight {
-    @Indexed
+    @Indexed(unique = true)
     private String docId;
     private Map<String, Double> termWeights;     // non-zero term weights   (key: wordId, value: term weight)
 }

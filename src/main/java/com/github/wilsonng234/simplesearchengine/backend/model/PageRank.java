@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Document(collection = "pageRanks")
 public class PageRank {
-    @Indexed
+    @Indexed(unique = true)
     private String docId;
     private double pageRank;
 

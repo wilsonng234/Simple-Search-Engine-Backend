@@ -66,8 +66,9 @@ public class TermWeightService {
         int i = 0;
         for (Document document : documents) {
             documentsBiMap.put(document.getDocId(), i);
-            i++;
+            i += 1;
         }
+
         i = 0;
         BiMap<String, Integer> wordsBiMap = HashBiMap.create();
         for (Word word : words) {
@@ -85,10 +86,9 @@ public class TermWeightService {
             documentsVector.add(documentVector);
         }
 
-        double titleWeight = 10.0;
-        int numDocs = documents.size();
-
         class UpdateTermWeightsByWords implements Runnable {
+            final double titleWeight = 10.0;
+            final int numDocs = documents.size();
             private final List<Word> words;
 
             public UpdateTermWeightsByWords(List<Word> words) {

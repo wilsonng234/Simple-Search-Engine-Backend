@@ -75,8 +75,8 @@ public class TermWeightsVectorService {
         }
 
         class UpdateTermWeightsByWords implements Runnable {
-            final double titleWeight = 10.0;
-            final int numDocs = documents.size();
+            private final double titleWeight = 10.0;
+            private final int numDocs = documents.size();
             private final List<Word> words;
 
             public UpdateTermWeightsByWords(List<Word> words) {

@@ -3,7 +3,6 @@ package com.github.wilsonng234.simplesearchengine.backend.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
@@ -21,13 +20,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Posting {
     @Id
     private String postingId;
-    @NonNull
     private String type;        // type.equals("title") || type.equals("body");
-    @NonNull
     private String wordId;
-    @NonNull
     private String docId;
-    @NonNull
     private int tf;
 
     @Override

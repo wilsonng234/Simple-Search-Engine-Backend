@@ -2,12 +2,11 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.model.PageRank;
-import com.github.wilsonng234.simplesearchengine.backend.model.Posting;
+import com.github.wilsonng234.simplesearchengine.backend.model.TermWeightsVector;
 import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.SearchEngineUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.VSMUtils;
-import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -15,14 +14,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,9 +30,9 @@ public class SearchEngineService {
     @Autowired
     private DocumentService documentService;
     @Autowired
-    private PageRankService pageRankService;
+    private TermWeightsVectorService termWeightsVectorService;
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private PageRankService pageRankService;
     private List<Word> words;
     private List<Document> documents;
     private List<Double> pageRanksVector;
@@ -50,7 +45,7 @@ public class SearchEngineService {
 
     @Data
     @AllArgsConstructor
-    public class QueryResult {
+    public static class QueryResult {
         private double score;
         private String docId;
         private String url;
@@ -171,7 +166,6 @@ public class SearchEngineService {
 
             Optional<PageRank> pageRankOptional = pageRankService.getPageRank(docId);
             if (pageRankOptional.isEmpty()) {
-                logger.warn("PageRank for document " + docId + " not found");
                 pageRanksVector.add(1 / (double) documents.size());
             } else {
                 pageRanksVector.add(pageRankOptional.get().getPageRank());
@@ -202,100 +196,32 @@ public class SearchEngineService {
     }
 
     private void setUpDocumentsVector() {
-        double titleWeight = 10.0;
-        int numDocs = documents.size();
+        for (Document document : documents) {
+            String docId = document.getDocId();
+            Integer docIndex = documentsMap.get(docId);
 
-        class UpdateTermWeightsByWords implements Runnable {
-            private final List<Word> words;
-
-            public UpdateTermWeightsByWords(List<Word> words) {
-                this.words = words;
+            if (docIndex == null) {
+                logger.error("Doc index is null");
+                continue;
             }
 
-            @Override
-            public void run() {
-                for (Word word : words) {
-                    String wordId = word.getWordId();
-                    Integer wordIndex = wordsMap.get(wordId);
+            Optional<TermWeightsVector> termWeightsVector = termWeightsVectorService.getTermWeightsVector(docId);
+            if (termWeightsVector.isEmpty()) {
+                logger.error("Term weights vector for document " + docId + " not found");
+                continue;
+            }
 
-                    if (wordIndex == null) {
-                        logger.error("Word index is null" + word.getWord());
-                        continue;
-                    }
-
-                    List<Posting> titlePostings = mongoTemplate.find(
-                            Query.query(
-                                    Criteria.where("type").is("title")
-                                            .and("wordId").is(wordId)),
-                            Posting.class
-                    );
-                    List<Posting> bodyPostings = mongoTemplate.find(
-                            Query.query(Criteria.where("type").is("body")
-                                    .and("wordId").is(wordId)),
-                            Posting.class
-                    );
-
-                    int titleDocFreq = titlePostings.size();
-                    for (Posting posting : titlePostings) {
-                        String docId = posting.getDocId();
-                        Integer docIndex = documentsMap.get(docId);
-                        if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
-                            continue;
-                        }
-                        int titleTF = posting.getTf();
-                        int titleMaxTF = documents.get(docIndex).getTitleMaxTF();
-
-                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = titleWeight * VSMUtils.getTermWeight(titleTF, numDocs, titleDocFreq, titleMaxTF);
-                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
-                    }
-
-                    int bodyDocFreq = bodyPostings.size();
-                    for (Posting posting : bodyPostings) {
-                        String docId = posting.getDocId();
-                        Integer docIndex = documentsMap.get(docId);
-                        if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
-                            continue;
-                        }
-                        int bodyTF = posting.getTf();
-                        int bodyMaxTF = documents.get(docIndex).getBodyMaxTF();
-
-                        double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = VSMUtils.getTermWeight(bodyTF, numDocs, bodyDocFreq, bodyMaxTF);
-                        documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
-                    }
+            Map<String, Double> termWeights = termWeightsVector.get().getTermWeights();
+            for (Word word : words) {
+                String wordId = word.getWordId();
+                Integer wordIndex = wordsMap.get(wordId);
+                if (wordIndex == null) {
+                    logger.error("Word index is null");
+                    continue;
                 }
-            }
-        }
 
-        int numThreads = Runtime.getRuntime().availableProcessors();
-        ExecutorService executorService = Executors.newCachedThreadPool();
-
-        double taskThreadsRatio = 1d;     // taskThreadsRatio: (num tasks / num available threads)
-        int chunkSize = (int) Math.ceil((double) words.size() / numThreads / taskThreadsRatio);
-        List<List<Word>> wordsChunks = Lists.partition(words, chunkSize);
-        List<Future<?>> futures = new ArrayList<>(wordsChunks.size());
-        for (List<Word> chunk : wordsChunks)
-            futures.add(executorService.submit(new UpdateTermWeightsByWords(chunk)));
-
-        executorService.shutdown();     // stop accepting new tasks
-        try {
-            if (!executorService.awaitTermination(60, TimeUnit.MINUTES)) {
-                executorService.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            logger.error(ex.getMessage());
-            executorService.shutdownNow();
-        }
-
-        // Handle tasks exceptions
-        for (Future<?> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException ex) {
-                logger.error(ex.getMessage());
+                Double termWeight = termWeights.getOrDefault(wordId, 0.0);
+                documentsVector.get(docIndex).set(wordIndex, termWeight);
             }
         }
     }

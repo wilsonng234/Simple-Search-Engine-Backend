@@ -19,7 +19,7 @@ public abstract class NLPUtils {
     private static final String RESOURCE_PATH = "src" + File.separator + "main" + File.separator + "resources" + File.separator;
     private static final Set<String> stopWords = new HashSet<>();
     private static final PorterStemmer porterStemmer = new PorterStemmer();
-    private static ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(StringBuilder::new);
+    private static final ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(StringBuilder::new);
 
     private static final Set<List<String>> biGramGrammaticalPatterns;
     private static final Set<List<String>> triGramGrammaticalPatterns;

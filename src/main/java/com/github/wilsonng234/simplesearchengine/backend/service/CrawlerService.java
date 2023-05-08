@@ -1,7 +1,6 @@
 package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
-import com.github.wilsonng234.simplesearchengine.backend.model.PageRank;
 import com.github.wilsonng234.simplesearchengine.backend.model.ParentLink;
 import com.github.wilsonng234.simplesearchengine.backend.util.CrawlerUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
@@ -41,6 +40,8 @@ public class CrawlerService {
     private PostingService postingService;
     @Autowired
     private ParentLinkService parentLinkService;
+    @Autowired
+    private TermWeightsVectorService termWeightsVectorService;
     @Autowired
     private PageRankService pageRankService;
 
@@ -305,7 +306,8 @@ public class CrawlerService {
                     return wordService.putWord(word);
                 }).getWordId();
 
-                postingService.putPosting(wordId, "title", docId, tf);
+                String type = "title";
+                postingService.putPosting(wordId, type, docId, tf);
             }
 
             for (Pair<String, Integer> wordFreq : bodyWordFreqs) {
@@ -317,13 +319,9 @@ public class CrawlerService {
                     return wordService.putWord(word);
                 }).getWordId();
 
-                postingService.putPosting(wordId, "body", docId, tf);
+                String type = "body";
+                postingService.putPosting(wordId, type, docId, tf);
             }
-
-            // put page rank
-            Optional<PageRank> pageRankOptional = pageRankService.getPageRank(docId);
-            PageRank pageRank = pageRankOptional.orElseGet(() -> new PageRank(docId));
-            pageRankService.putPageRank(pageRank);
 
             // breadth-first search
             bfs(crawlers, crawledLinks, childrenLinks, crawler.getUrl());
@@ -331,10 +329,19 @@ public class CrawlerService {
             crawledLinks.add(crawler.getUrl());
             crawledPages++;
         }
-
-        pageRankService.updatePageRank();
         long end = System.currentTimeMillis();
         logger.info("Crawled " + crawledPages + " pages in " + (end - start) / 1000.0 + " seconds");
+
+        start = System.currentTimeMillis();
+        termWeightsVectorService.updateTermWeightsVector();
+        end = System.currentTimeMillis();
+        logger.info("Updated term weights vector in " + (end - start) / 1000.0 + " seconds");
+
+        start = System.currentTimeMillis();
+        pageRankService.updatePageRank();
+        end = System.currentTimeMillis();
+        logger.info("Updated page ranks in " + (end - start) / 1000.0 + " seconds");
+
         return true;
     }
 }

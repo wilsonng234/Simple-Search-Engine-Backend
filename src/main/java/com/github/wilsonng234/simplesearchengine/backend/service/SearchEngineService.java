@@ -205,13 +205,13 @@ public class SearchEngineService {
                 continue;
             }
 
-            Optional<TermWeight> termWeightsVector = termWeightService.getTermWeightsVector(docId);
-            if (termWeightsVector.isEmpty()) {
+            Optional<TermWeight> termWeightOptional = termWeightService.getTermWeights(docId);
+            if (termWeightOptional.isEmpty()) {
                 logger.error("Term weights vector for document " + docId + " not found");
                 continue;
             }
 
-            Map<String, Double> termWeights = termWeightsVector.get().getTermWeights();
+            Map<String, Double> termWeights = termWeightOptional.get().getTermWeights();
             for (Word word : words) {
                 String wordId = word.getWordId();
                 Integer wordIndex = wordsMap.get(wordId);

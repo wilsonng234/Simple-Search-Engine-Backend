@@ -25,13 +25,13 @@ public class TermWeightService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public Optional<TermWeight> getTermWeightsVector(String docId) {
+    public Optional<TermWeight> getTermWeights(String docId) {
         Query query = new Query(Criteria.where("docId").is(docId));
 
         return Optional.ofNullable(mongoTemplate.findOne(query, TermWeight.class));
     }
 
-    public TermWeight putTermWeightsVector(TermWeight termWeight) {
+    public TermWeight putTermWeights(TermWeight termWeight) {
         Query query = new Query(Criteria.where("docId").is(termWeight.getDocId()));
         Update update = new Update().set("termWeights", termWeight.getTermWeights());
         FindAndModifyOptions findAndModifyOptions = FindAndModifyOptions.options().upsert(true).returnNew(true);
@@ -46,7 +46,7 @@ public class TermWeightService {
         }
     }
 
-    public boolean updateTermWeightsVector() {
+    public boolean updateTermWeights() {
         List<Document> documents = mongoTemplate.findAll(Document.class);
         List<Word> words = mongoTemplate.findAll(Word.class);
 
@@ -154,7 +154,7 @@ public class TermWeightService {
                     }
 
                     TermWeight termWeight = new TermWeight(docId, termWeights);
-                    putTermWeightsVector(termWeight);
+                    putTermWeights(termWeight);
                 }
             }
         }

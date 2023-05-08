@@ -333,7 +333,7 @@ public class CrawlerService {
         logger.info("Crawled " + crawledPages + " pages in " + (end - start) / 1000.0 + " seconds");
 
         start = System.currentTimeMillis();
-        termWeightService.updateTermWeightsVector();
+        termWeightService.updateTermWeights();
         end = System.currentTimeMillis();
         logger.info("Updated term weights vector in " + (end - start) / 1000.0 + " seconds");
 

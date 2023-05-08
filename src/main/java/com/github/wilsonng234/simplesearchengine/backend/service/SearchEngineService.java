@@ -243,11 +243,11 @@ public class SearchEngineService {
                             logger.error("Doc index is null" + docId);
                             continue;
                         }
-                        int maxTF = documents.get(docIndex).getMaxTF();
-                        int tf = posting.getTf();
+                        int titleTF = posting.getTf();
+                        int titleMaxTF = documents.get(docIndex).getTitleMaxTF();
 
                         double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = titleWeight * VSMUtils.getTermWeight(tf, numDocs, titleDocFreq, maxTF);
+                        double additionTermWeight = titleWeight * VSMUtils.getTermWeight(titleTF, numDocs, titleDocFreq, titleMaxTF);
                         documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                     }
 
@@ -259,11 +259,11 @@ public class SearchEngineService {
                             logger.error("Doc index is null" + docId);
                             continue;
                         }
-                        int maxTF = documents.get(docIndex).getMaxTF();
-                        int tf = posting.getTf();
+                        int bodyTF = posting.getTf();
+                        int bodyMaxTF = documents.get(docIndex).getBodyMaxTF();
 
                         double originTermWeight = documentsVector.get(docIndex).get(wordIndex);
-                        double additionTermWeight = VSMUtils.getTermWeight(tf, numDocs, bodyDocFreq, maxTF);
+                        double additionTermWeight = VSMUtils.getTermWeight(bodyTF, numDocs, bodyDocFreq, bodyMaxTF);
                         documentsVector.get(docIndex).set(wordIndex, originTermWeight + additionTermWeight);
                     }
                 }

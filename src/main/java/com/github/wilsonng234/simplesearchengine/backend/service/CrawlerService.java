@@ -256,7 +256,8 @@ public class CrawlerService {
             }
 
             // get the document
-            int maxTF = 0;
+            int titleMaxTF = 0;
+            int bodyMaxTF = 0;
             long size = crawler.getSize();
             String title = crawler.getTitle();
 
@@ -267,7 +268,7 @@ public class CrawlerService {
                 Integer freq = wordFreq.getSecond();
                 wordService.getWord(word, WordService.QueryType.WORD)
                         .orElseGet(() -> wordService.putWord(word));
-                maxTF = Math.max(maxTF, freq);
+                titleMaxTF = Math.max(titleMaxTF, freq);
             }
 
             // set up bodyWordFreqs
@@ -277,13 +278,13 @@ public class CrawlerService {
                 Integer freq = wordFreq.getSecond();
                 wordService.getWord(word, WordService.QueryType.WORD)
                         .orElseGet(() -> wordService.putWord(word));
-                maxTF = Math.max(maxTF, freq);
+                bodyMaxTF = Math.max(bodyMaxTF, freq);
             }
 
             Set<String> childrenLinks = crawler.getChildrenLinks();
             Document document = new Document(crawler.getUrl(), size, title, lastModificationDate,
                     titleWordFreqs, bodyWordFreqs, childrenLinks,
-                    maxTF);
+                    titleMaxTF, bodyMaxTF);
 
             // update the forward index
             document = documentService.putDocument(document);

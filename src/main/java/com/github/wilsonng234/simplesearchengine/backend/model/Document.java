@@ -23,7 +23,8 @@ public class Document {
     private List<Pair<String, Integer>> titleWordFreqs;      // word, frequency
     private List<Pair<String, Integer>> bodyWordFreqs;       // word, frequency
     private Set<String> childrenUrls;
-    private int maxTF;
+    private int titleMaxTF;
+    private int bodyMaxTF;
 
     public Document() {
         size = 0;
@@ -32,13 +33,14 @@ public class Document {
         titleWordFreqs = null;
         bodyWordFreqs = null;
         childrenUrls = null;
-        maxTF = 0;
+        titleMaxTF = 0;
+        bodyMaxTF = 0;
     }
 
     public Document(String url, long size, String title, long lastModificationDate,
                     List<Pair<String, Integer>> titleWordFreqs,
                     List<Pair<String, Integer>> bodyWordFreqs,
-                    Set<String> childrenUrls, int maxTF) {
+                    Set<String> childrenUrls, int titleMaxTF, int bodyMaxTF) {
         this.url = url;
         this.size = size;
         this.title = title;
@@ -46,6 +48,7 @@ public class Document {
         this.titleWordFreqs = titleWordFreqs;
         this.bodyWordFreqs = bodyWordFreqs;
         this.childrenUrls = childrenUrls;
-        this.maxTF = maxTF;
+        this.titleMaxTF = titleMaxTF;
+        this.bodyMaxTF = bodyMaxTF;
     }
 }

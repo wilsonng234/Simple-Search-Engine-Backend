@@ -158,7 +158,7 @@ public class TermWeightService {
                     for (int wordIndex = 0; wordIndex < documentVector.size(); wordIndex++) {
                         String wordId = wordsBiMap.inverse().get(wordIndex);
 
-                        TermWeight termWeight = new TermWeight(wordId, docId, documentVector.get(wordIndex));
+                        TermWeight termWeight = new TermWeight(docId, wordId, documentVector.get(wordIndex));
                         putTermWeight(termWeight);
                     }
                 }

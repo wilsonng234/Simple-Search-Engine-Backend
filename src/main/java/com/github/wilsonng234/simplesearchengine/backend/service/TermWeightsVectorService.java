@@ -21,7 +21,7 @@ import java.util.concurrent.*;
 
 @Service
 public class TermWeightsVectorService {
-    private static final Logger logger = LogManager.getLogger(TermWeightService.class);
+    private static final Logger logger = LogManager.getLogger(TermWeightsVectorService.class);
     @Autowired
     private MongoTemplate mongoTemplate;
 

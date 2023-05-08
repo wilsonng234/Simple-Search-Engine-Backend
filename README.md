@@ -20,7 +20,7 @@ MongoDBCompass: Version 1.36.4
    `spring.data.mongodb.auto-index-creation:true`: automatically create indexes for the collections  
    `server.port=8080`: the port that the backend will run on
 
-3. Set up [.env](src/main/resources/.env)
+3. Set up [.env](src/main/resources/.env)  
    Default value:  
    `MONGO_DATABASE=simple-search-engine-db`: the name of the database that will be created in MongoDBCompass
 

@@ -111,7 +111,7 @@ public class TermWeightService {
                         String docId = posting.getDocId();
                         Integer docIndex = documentsBiMap.get(docId);
                         if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
+//                            logger.error("Doc index is null" + docId);    // could happen if multiple crawling requests are running
                             continue;
                         }
                         int titleTF = posting.getTf();
@@ -127,7 +127,7 @@ public class TermWeightService {
                         String docId = posting.getDocId();
                         Integer docIndex = documentsBiMap.get(docId);
                         if (docIndex == null) {
-                            logger.error("Doc index is null" + docId);
+//                            logger.warn("Doc index is null" + docId);     // could happen if multiple crawling requests are running
                             continue;
                         }
                         int bodyTF = posting.getTf();

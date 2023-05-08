@@ -44,6 +44,8 @@ public class CrawlerService {
     @Autowired
     private TermWeightService termWeightService;
     @Autowired
+    private TermWeightsVectorService termWeightsVectorService;
+    @Autowired
     private PageRankService pageRankService;
 
     @Data
@@ -336,11 +338,11 @@ public class CrawlerService {
         }
         long end = System.currentTimeMillis();
         logger.info("Crawled " + crawledPages + " pages in " + (end - start) / 1000.0 + " seconds");
-
+        
         start = System.currentTimeMillis();
-        termWeightService.updateTermWeights();
+        termWeightsVectorService.updateTermWeightsVector();
         end = System.currentTimeMillis();
-        logger.info("Updated term weights in " + (end - start) / 1000.0 + " seconds");
+        logger.info("Updated term weights vector in " + (end - start) / 1000.0 + " seconds");
 
         start = System.currentTimeMillis();
         pageRankService.updatePageRank();

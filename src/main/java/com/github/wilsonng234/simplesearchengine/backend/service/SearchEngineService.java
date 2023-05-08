@@ -2,7 +2,7 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.model.PageRank;
-import com.github.wilsonng234.simplesearchengine.backend.model.TermWeight;
+import com.github.wilsonng234.simplesearchengine.backend.model.TermWeightsVector;
 import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.SearchEngineUtils;
@@ -32,6 +32,8 @@ public class SearchEngineService {
     private DocumentService documentService;
     @Autowired
     private TermWeightService termWeightService;
+    @Autowired
+    private TermWeightsVectorService termWeightsVectorService;
     @Autowired
     private PageRankService pageRankService;
     @Autowired
@@ -200,22 +202,33 @@ public class SearchEngineService {
     }
 
     private void setUpDocumentsVector() {
-        List<TermWeight> termWeights = termWeightService.allTermWeights();
-
-        for (TermWeight termWeight : termWeights) {
-            String docId = termWeight.getDocId();
-            String wordId = termWeight.getWordId();
-            double termWeightValue = termWeight.getTermWeight();
-
+        for (Document document : documents) {
+            String docId = document.getDocId();
             Integer docIndex = documentsMap.get(docId);
-            Integer wordIndex = wordsMap.get(wordId);
 
-            if (docIndex == null || wordIndex == null) {
-                logger.error("Doc index or word index is null");
+            if (docIndex == null) {
+                logger.error("Doc index is null");
                 continue;
             }
 
-            documentsVector.get(docIndex).set(wordIndex, termWeightValue);
+            Optional<TermWeightsVector> termWeightsVector = termWeightsVectorService.getTermWeightsVector(docId);
+            if (termWeightsVector.isEmpty()) {
+                logger.error("Term weights vector for document " + docId + " not found");
+                continue;
+            }
+
+            Map<String, Double> termWeights = termWeightsVector.get().getTermWeights();
+            for (Word word : words) {
+                String wordId = word.getWordId();
+                Integer wordIndex = wordsMap.get(wordId);
+                if (wordIndex == null) {
+                    logger.error("Word index is null");
+                    continue;
+                }
+
+                Double termWeight = termWeights.getOrDefault(wordId, 0.0);
+                documentsVector.get(docIndex).set(wordIndex, termWeight);
+            }
         }
     }
 }

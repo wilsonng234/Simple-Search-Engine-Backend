@@ -14,7 +14,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +33,6 @@ public class SearchEngineService {
     private TermWeightsVectorService termWeightsVectorService;
     @Autowired
     private PageRankService pageRankService;
-    @Autowired
-    private MongoTemplate mongoTemplate;
     private List<Word> words;
     private List<Document> documents;
     private List<Double> pageRanksVector;
@@ -48,7 +45,7 @@ public class SearchEngineService {
 
     @Data
     @AllArgsConstructor
-    public class QueryResult {
+    public static class QueryResult {
         private double score;
         private String docId;
         private String url;
@@ -169,7 +166,6 @@ public class SearchEngineService {
 
             Optional<PageRank> pageRankOptional = pageRankService.getPageRank(docId);
             if (pageRankOptional.isEmpty()) {
-                logger.warn("PageRank for document " + docId + " not found");
                 pageRanksVector.add(1 / (double) documents.size());
             } else {
                 pageRanksVector.add(pageRankOptional.get().getPageRank());

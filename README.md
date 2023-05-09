@@ -3,7 +3,8 @@
 ## Installation
 
 SDK: Oracle OpenJDK version 17.0.6  
-MongoDBCompass: version 1.36.4
+MongoDB: version 6.0.5  
+MongoDBCompass: version 1.36.4  
 
 ## Getting started
 
@@ -11,7 +12,7 @@ MongoDBCompass: version 1.36.4
    Set up the Connection String URI and click the Connect button  
    By default,the Connection String URI is `mongodb://localhost:27017`
 
-   ![MongoDBCompass new connection](imgs/MongoDBCompass.png)
+    ![MongoDBCompass new connection](imgs/MongoDBCompass.png)
 
 2. Set up [application.properties](src/main/resources/application.properties)  
    Default value:  
@@ -28,37 +29,36 @@ MongoDBCompass: version 1.36.4
 
 [Optional]
 
-- `.\mvnw test` to run the JUnit tests
-- `.\mvnw install jacoco:report` to generate Jacoco test coverage report
+-   `.\mvnw test` to run the JUnit tests
+-   `.\mvnw install jacoco:report` to generate Jacoco test coverage report
 
 # Collections
 
-- [X] Implement `words` collection
-- [X] Implement `documents` collection
-- [X] Implement `postings` collection
-- [X] Implement `parentLinks` collection
-- [X] Implement `termWeights` collection
-- [X] Implement `pageRanks` collection
+-   [x] Implement `words` collection
+-   [x] Implement `documents` collection
+-   [x] Implement `postings` collection
+-   [x] Implement `parentLinks` collection
+-   [x] Implement `termWeights` collection
+-   [x] Implement `pageRanks` collection
 
 # Crawler
 
-- [X] Implement crawler
-    - [X] Create api endpoint `api/v1/crawler`
-        - Query params:
-            - url: url to crawl  
-              Default value: https://cse.ust.hk/
-            - pages: number of pages to crawl  
-              Default value: 30
+-   [x] Implement crawler
+    -   [x] Create api endpoint `api/v1/crawler`
+        -   Query params:
+            -   url: url to crawl  
+                Default value: https://cse.ust.hk/
+            -   pages: number of pages to crawl  
+                Default value: 30
 
 # Vector Space Model
 
-- [X] Implement term weighting formula based on `tf*idf/max(tf)`
-- [X] Implement Document Similarity based on cosine similarity measure
-- [X] Implement mechanism to favor matches in title
-- [X] Create api endpoint `api/v1/searchEngine`
-    - [X] Return top-50 query results
-- [X] Implement phrase search
-    - [X] Implement bi-gram terms
-    - [X] Implement tri-gram terms
-    - [X] Parse query to find phrase terms
- 
+-   [x] Implement term weighting formula based on `tf*idf/max(tf)`
+-   [x] Implement Document Similarity based on cosine similarity measure
+-   [x] Implement mechanism to favor matches in title
+-   [x] Create api endpoint `api/v1/searchEngine`
+    -   [x] Return top-50 query results
+-   [x] Implement phrase search
+    -   [x] Implement bi-gram terms
+    -   [x] Implement tri-gram terms
+    -   [x] Parse query to find phrase terms

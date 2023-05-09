@@ -2,7 +2,7 @@ package com.github.wilsonng234.simplesearchengine.backend.service;
 
 import com.github.wilsonng234.simplesearchengine.backend.model.Document;
 import com.github.wilsonng234.simplesearchengine.backend.model.PageRank;
-import com.github.wilsonng234.simplesearchengine.backend.model.TermWeightsVector;
+import com.github.wilsonng234.simplesearchengine.backend.model.TermWeight;
 import com.github.wilsonng234.simplesearchengine.backend.model.Word;
 import com.github.wilsonng234.simplesearchengine.backend.util.NLPUtils;
 import com.github.wilsonng234.simplesearchengine.backend.util.SearchEngineUtils;
@@ -30,7 +30,7 @@ public class SearchEngineService {
     @Autowired
     private DocumentService documentService;
     @Autowired
-    private TermWeightsVectorService termWeightsVectorService;
+    private TermWeightService termWeightService;
     @Autowired
     private PageRankService pageRankService;
     private List<Word> words;
@@ -205,13 +205,13 @@ public class SearchEngineService {
                 continue;
             }
 
-            Optional<TermWeightsVector> termWeightsVector = termWeightsVectorService.getTermWeightsVector(docId);
-            if (termWeightsVector.isEmpty()) {
+            Optional<TermWeight> termWeightOptional = termWeightService.getTermWeights(docId);
+            if (termWeightOptional.isEmpty()) {
                 logger.error("Term weights vector for document " + docId + " not found");
                 continue;
             }
 
-            Map<String, Double> termWeights = termWeightsVector.get().getTermWeights();
+            Map<String, Double> termWeights = termWeightOptional.get().getTermWeights();
             for (Word word : words) {
                 String wordId = word.getWordId();
                 Integer wordIndex = wordsMap.get(wordId);

@@ -4,7 +4,7 @@
 
 SDK: Oracle OpenJDK version 17.0.6  
 MongoDB: version 6.0.5  
-MongoDBCompass: version 1.36.4  
+MongoDBCompass: version 1.36.4
 
 ## Getting started
 
@@ -14,18 +14,13 @@ MongoDBCompass: version 1.36.4
 
     ![MongoDBCompass new connection](imgs/MongoDBCompass.png)
 
-2. Set up [application.properties](src/main/resources/application.properties)  
+2. Set up [.env](src/main/resources/.env)  
    Default value:  
-   `spring.data.mongodb.database=${MONGO_DATABASE}`: the name of the database  
-   `spring.data.mongodb.uri=mongodb://localhost:27017/`: the Connection String URI  
-   `spring.data.mongodb.auto-index-creation:true`: automatically create indexes for the collections  
-   `server.port=8080`: the port that the backend will run on
+   `MONGO_DATABASE=simple-search-engine-db`: the name of the database
+   `MONGO_DB_URL=mongodb://localhost:27017/`: the Connection String URI
+   `SERVER_PORT=8080`: the port that the backend will run on
 
-3. Set up [.env](src/main/resources/.env)  
-   Default value:  
-   `MONGO_DATABASE=simple-search-engine-db`: the name of the database that will be created in MongoDBCompass
-
-4. `./mvnw spring-boot:run` to run the backend
+3. `./mvnw spring-boot:run` to run the backend
 
 [Optional]
 

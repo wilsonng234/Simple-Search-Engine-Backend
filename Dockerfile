@@ -1,7 +1,7 @@
 FROM eclipse-temurin:17.0.6_10-jdk-jammy
 
 RUN apt-get update && apt-get install netcat -y
-RUN addgroup app && adduser -S -G app app
+RUN addgroup app && adduser --system --ingroup app app
 USER app
 WORKDIR /app
 COPY .mvn/ .mvn/

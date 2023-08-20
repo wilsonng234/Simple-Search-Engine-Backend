@@ -5,7 +5,7 @@ RUN addgroup app && adduser --system --ingroup app app
 USER app
 WORKDIR /app
 COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
+COPY mvnw pom.xml wait-for ./
 RUN ./mvnw dependency:resolve
 COPY src ./src
 

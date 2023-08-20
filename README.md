@@ -15,7 +15,7 @@ MongoDBCompass: version 1.36.4
     ![MongoDBCompass new connection](imgs/MongoDBCompass.png)
 
 2. Set up [.env](src/main/resources/.env)  
-   Default value:  
+   Change the environment variables to the value:  
    `MONGO_DATABASE=simple-search-engine-db`: the name of the database
    `MONGO_DB_URL=mongodb://localhost:27017/`: the Connection String URI
    `SERVER_PORT=8080`: the port that the backend will run on
